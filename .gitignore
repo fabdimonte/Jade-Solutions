@@ -1,0 +1,23 @@
+# Fichiers secrets - A AJUSTER SI NECESSAIRE
+core/settings.py
+
+# Base de données
+*.sqlite3
+db.sqlite3
+
+# Environnement virtuel
+venv/
+.env
+
+# Fichiers Python temporaires
+__pycache__/
+*.pyc
+
+# Fichiers de l'IDE PyCharm
+.idea/
+
+# Fichiers statiques collectés
+staticfiles/
+
+# Fichiers média uploadés
+media/
