@@ -4,18 +4,25 @@ import { useParams, Link } from 'react-router-dom';
 import SocieteInfo from '../components/SocieteInfo';     // <--- Importer l'onglet Info
 import SocieteContacts from '../components/SocieteContacts'; // <--- Importer l'onglet Contacts
 import ContactFormModal from '../components/ContactFormModal';
+import SocieteMandats from '../components/SocieteMandats';
+import MandatFormModal from '../components/MandatFormModal';
 
 function SocieteDetailPage() {
   const { id } = useParams();
   const [formData, setFormData] = useState(null);
   const [activeTab, setActiveTab] = useState('info');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [contactListVersion, setContactListVersion] = useState(0);
 
-  // 1. NOUVEL ÉTAT : Stocker le contact à modifier
+  // --- États pour la modale Contact (inchangés) ---
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [contactListVersion, setContactListVersion] = useState(0);
   const [contactToEdit, setContactToEdit] = useState(null);
 
-  // 2. Le useEffect (inchangé) va chercher les données de la société
+  // 2. NOUVEAUX ÉTATS : pour la modale Mandat
+  const [isMandatModalOpen, setIsMandatModalOpen] = useState(false);
+  const [mandatListVersion, setMandatListVersion] = useState(0);
+  const [mandatToEdit, setMandatToEdit] = useState(null); // Pour la modification plus tard
+
+  // 2. Le useEffect va chercher les données de la société
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/societes/${id}/`)
       .then(response => response.json())
@@ -23,13 +30,13 @@ function SocieteDetailPage() {
       .catch(error => console.error('Erreur fetch:', error));
   }, [id]);
 
-  // 3. Le handleChange (inchangé) met à jour le formulaire
+  // 3. Le handleChange met à jour le formulaire
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevData => ({ ...prevData, [name]: value }));
   };
 
-  // 4. Le handleSubmit (inchangé) sauvegarde le formulaire
+  // 4. Le handleSubmit sauvegarde le formulaire
   const handleSubmit = (e) => {
     e.preventDefault();
     fetch(`http://127.0.0.1:8000/api/societes/${id}/`, {
@@ -53,23 +60,39 @@ function SocieteDetailPage() {
     setContactToEdit(null); // RAZ du contact à modifier
   };
 
-  // 3. NOUVELLE FONCTION : pour ouvrir la modale en mode "Création"
+  // 3. pour ouvrir la modale en mode "Création"
   const handleAddContactClick = () => {
     setContactToEdit(null); // S'assurer qu'on est en mode création
     setIsModalOpen(true);
   };
 
-  // 4. NOUVELLE FONCTION : pour ouvrir la modale en mode "Modification"
+  // 4. pour ouvrir la modale en mode "Modification"
   const handleEditContactClick = (contact) => {
     setContactToEdit(contact); // Définir le contact à modifier
     setIsModalOpen(true);      // Ouvrir la modale
   };
 
-  // 5. NOUVELLE FONCTION : pour gérer la fermeture
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setContactToEdit(null); // Toujours RAZ à la fermeture
+  // 5. pour gérer la fermeture de contact
+  const handleCloseContactModal = () => {
+    setIsContactModalOpen(false);
+    setContactToEdit(null);
+  }
+
+  const handleMandatSaveSuccess = () => {
+    setMandatListVersion(v => v + 1); // Rafraîchit la liste des mandats
+    setIsMandatModalOpen(false);
+    setMandatToEdit(null);
   };
+
+  const handleAddMandatClick = () => {
+    setMandatToEdit(null); // On est en mode création
+    setIsMandatModalOpen(true);
+  };
+
+  const handleCloseMandatModal = () => {
+    setIsMandatModalOpen(false);
+    setMandatToEdit(null);
+  }
 
   // 5. NOUVELLE FONCTION : pour gérer la suppression
   const handleDeleteContactClick = (contactId) => {
@@ -133,6 +156,7 @@ function SocieteDetailPage() {
           >
             Informations Société
           </button>
+
           <button
             type="button"
             style={activeTab === 'contacts' ? activeTabStyles : tabStyles}
@@ -140,7 +164,14 @@ function SocieteDetailPage() {
           >
             Contacts
           </button>
-          {/* Ajoutez d'autres boutons d'onglets ici (ex: Mandats) */}
+
+          <button
+            type="button"
+            style={activeTab === 'mandats' ? activeTabStyles : tabStyles}
+            onClick={() => setActiveTab('mandats')}
+          >
+            Mandats
+          </button>
         </div>
 
           {/* CONTENU DES ONGLETS */}
@@ -159,15 +190,33 @@ function SocieteDetailPage() {
               onDeleteContactClick={handleDeleteContactClick} // <-- NOUVELLE PROP
             />
           )}
+          {activeTab === 'mandats' && (
+            // 4. On passe les nouvelles props à SocieteMandats
+            <SocieteMandats
+              societeId={id}
+              listVersion={mandatListVersion}
+              onAddMandatClick={handleAddMandatClick}
+              // onEditMandatClick={...} // pour plus tard
+              // onDeleteMandatClick={...} // pour plus tard
+            />
+          )}
         </div>
       </form>
       {/* 7. On passe le NOUVEL état à la modale */}
       <ContactFormModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
+        isOpen={isContactModalOpen}
+        onClose={handleCloseContactModal}
         societeId={id}
         onSaveSuccess={handleContactSaveSuccess}
         contactToEdit={contactToEdit} // <-- NOUVELLE PROP
+      />
+      {/* 5. On ajoute la nouvelle modale des mandats (qui est vide pour l'instant) */}
+      <MandatFormModal
+        isOpen={isMandatModalOpen}
+        onClose={handleCloseMandatModal}
+        societeId={id} // On passe l'ID de la société pour l'auto-associer
+        onSaveSuccess={handleMandatSaveSuccess}
+        mandatToEdit={mandatToEdit}
       />
     </div>
   );
