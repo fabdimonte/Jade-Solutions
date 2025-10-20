@@ -2,7 +2,21 @@
 import React, { useState, useEffect } from 'react';
 
 // ... (les styles de la modale restent inchangés) ...
-const modalStyles = { /* ... */ };
+const modalStyles = {
+  overlay: {
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex',
+    justifyContent: 'center', alignItems: 'center', zIndex: 1000,
+  },
+  content: {
+    backgroundColor: 'white', padding: '20px', borderRadius: '8px',
+    width: '600px', position: 'relative', color: 'black',
+  },
+  closeButton: {
+    position: 'absolute', top: '10px', right: '10px', cursor: 'pointer',
+    border: 'none', background: 'transparent', fontSize: '1.5rem',
+  }
+};
 
 // 1. Accepter la nouvelle prop 'contactToEdit'
 function ContactFormModal({ isOpen, onClose, societeId, onSaveSuccess, contactToEdit }) {
@@ -72,9 +86,7 @@ function ContactFormModal({ isOpen, onClose, societeId, onSaveSuccess, contactTo
     .catch(error => console.error("Erreur API:", error));
   };
 
-  if (!isOpen) {
-    return null;
-  }
+  if (!isOpen) return null;
 
   // 5. On change le titre de la modale en fonction du mode
   return (
@@ -82,8 +94,8 @@ function ContactFormModal({ isOpen, onClose, societeId, onSaveSuccess, contactTo
       <div style={modalStyles.content} onClick={e => e.stopPropagation()}>
         <button style={modalStyles.closeButton} onClick={onClose}>&times;</button>
         <h2>{contactToEdit ? 'Modifier le contact' : 'Ajouter un nouveau contact'}</h2>
+
         <form onSubmit={handleSubmit}>
-          {/* ... (le reste du formulaire est identique) ... */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
             <div>
               <label>Prénom:</label>

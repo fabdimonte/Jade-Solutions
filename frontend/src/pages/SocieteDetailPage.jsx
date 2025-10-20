@@ -1,8 +1,8 @@
 // src/pages/SocieteDetailPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import SocieteInfo from '../components/SocieteInfo';     // <--- Importer l'onglet Info
-import SocieteContacts from '../components/SocieteContacts'; // <--- Importer l'onglet Contacts
+import SocieteInfo from '../components/SocieteInfo';
+import SocieteContacts from '../components/SocieteContacts';
 import ContactFormModal from '../components/ContactFormModal';
 import SocieteMandats from '../components/SocieteMandats';
 import MandatFormModal from '../components/MandatFormModal';
@@ -56,45 +56,28 @@ function SocieteDetailPage() {
   // 2. La fonction de succès est mise à jour pour "nettoyer"
   const handleContactSaveSuccess = () => {
     setContactListVersion(v => v + 1); // Rafraîchit la liste
-    setIsModalOpen(false); // Ferme la modale
+    setIsContactModalOpen(false); // Ferme la modale
     setContactToEdit(null); // RAZ du contact à modifier
   };
 
   // 3. pour ouvrir la modale en mode "Création"
   const handleAddContactClick = () => {
     setContactToEdit(null); // S'assurer qu'on est en mode création
-    setIsModalOpen(true);
+    setIsContactModalOpen(true);
   };
 
   // 4. pour ouvrir la modale en mode "Modification"
   const handleEditContactClick = (contact) => {
     setContactToEdit(contact); // Définir le contact à modifier
-    setIsModalOpen(true);      // Ouvrir la modale
+    setIsContactModalOpen(true);      // Ouvrir la modale
   };
 
   // 5. pour gérer la fermeture de contact
   const handleCloseContactModal = () => {
     setIsContactModalOpen(false);
     setContactToEdit(null);
-  }
-
-  const handleMandatSaveSuccess = () => {
-    setMandatListVersion(v => v + 1); // Rafraîchit la liste des mandats
-    setIsMandatModalOpen(false);
-    setMandatToEdit(null);
   };
 
-  const handleAddMandatClick = () => {
-    setMandatToEdit(null); // On est en mode création
-    setIsMandatModalOpen(true);
-  };
-
-  const handleCloseMandatModal = () => {
-    setIsMandatModalOpen(false);
-    setMandatToEdit(null);
-  }
-
-  // 5. NOUVELLE FONCTION : pour gérer la suppression
   const handleDeleteContactClick = (contactId) => {
     // On demande confirmation pour éviter les accidents
     if (window.confirm("Êtes-vous sûr de vouloir supprimer ce contact ?")) {
@@ -112,6 +95,48 @@ function SocieteDetailPage() {
       .catch(error => console.error("Erreur API:", error));
     }
   };
+
+  const handleMandatSaveSuccess = () => {
+    setMandatListVersion(v => v + 1); // Rafraîchit la liste des mandats
+    setIsMandatModalOpen(false);
+    setMandatToEdit(null);
+  };
+
+  const handleAddMandatClick = () => {
+    setMandatToEdit(null); // On est en mode création
+    setIsMandatModalOpen(true);
+  };
+
+  const handleCloseMandatModal = () => {
+    setIsMandatModalOpen(false);
+    setMandatToEdit(null);
+  };
+
+  const handleEditMandatClick = (mandat) => {
+  setMandatToEdit(mandat); // On définit le mandat à modifier
+  setIsMandatModalOpen(true);  // On ouvre la modale
+  };
+
+  const handleDeleteMandatClick = (mandatId) => {
+    // On demande confirmation pour éviter les accidents
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce mandat ?")) {
+      fetch(`http://127.0.0.1:8000/api/mandats/${mandatId}/`, {
+        method: 'DELETE',
+      })
+      .then(response => {
+        if (response.ok) { // 'ok' couvre les statuts 200-299. DELETE renvoie souvent 204 No Content
+          alert('Mandat supprimé.');
+          setMandatListVersion(v => v + 1); // On force le rafraîchissement de la liste
+        } else {
+          alert('Erreur lors de la suppression du mandat.');
+        }
+      })
+      .catch(error => console.error("Erreur API:", error));
+    }
+  };
+
+  // 5. NOUVELLE FONCTION : pour gérer la suppression
+
 
   // 5. Styles CSS simples pour les onglets
   const tabStyles = {
@@ -196,8 +221,8 @@ function SocieteDetailPage() {
               societeId={id}
               listVersion={mandatListVersion}
               onAddMandatClick={handleAddMandatClick}
-              // onEditMandatClick={...} // pour plus tard
-              // onDeleteMandatClick={...} // pour plus tard
+              onEditMandatClick={handleEditMandatClick}
+              onDeleteMandatClick={handleDeleteMandatClick}
             />
           )}
         </div>

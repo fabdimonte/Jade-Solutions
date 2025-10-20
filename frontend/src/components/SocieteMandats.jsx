@@ -24,7 +24,7 @@ const getTypeLabel = (type) => {
 };
 
 
-function SocieteMandats({ societeId, listVersion, onAddMandatClick }) {
+function SocieteMandats({ societeId, listVersion, onAddMandatClick, onEditMandatClick, onDeleteMandatClick }) {
   const [mandats, setMandats] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,15 +52,11 @@ function SocieteMandats({ societeId, listVersion, onAddMandatClick }) {
     return <div>Chargement des mandats...</div>;
   }
 
-  if (loading) {
-    return <div>Chargement des mandats...</div>;
-  }
-
   return (
     <div>
       {/* On ajoutera un bouton "+ Ajouter Mandat" ici plus tard */}
       <div style={{ marginBottom: '15px' }}>
-        <button type="button">
+        <button type="button" onClick={onAddMandatClick}>
           + Ajouter un mandat
         </button>
       </div>
@@ -82,8 +78,20 @@ function SocieteMandats({ societeId, listVersion, onAddMandatClick }) {
                 </div>
                 <div>
                   {/* On ajoutera les boutons Modifier/Supprimer ici */}
-                  <button type="button" style={{ marginLeft: '10px' }}>Modifier</button>
-                  <button type="button" style={{ marginLeft: '10px', backgroundColor: '#f44336', color: 'white', border: 'none' }}>Supprimer</button>
+                  <button
+                    type="button"
+                    style={{ marginLeft: '10px' }}
+                    onClick={() => onEditMandatClick(mandat)}
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    type="button"
+                    style={{ marginLeft: '10px', backgroundColor: '#f44336', color: 'white', border: 'none' }}
+                    onClick={() => onDeleteMandatClick(mandat.id)}
+                  >
+                    Supprimer
+                  </button>
                 </div>
               </div>
             </li>
@@ -94,4 +102,4 @@ function SocieteMandats({ societeId, listVersion, onAddMandatClick }) {
   );
 }
 
-export default SocieteMandats;
+export default SocieteMandats;''
