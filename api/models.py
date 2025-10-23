@@ -13,7 +13,7 @@ class Societe(models.Model):
     # --- Identification ---
     nom = models.CharField(max_length=255, verbose_name="Nom de la société")
     siren = models.CharField(max_length=9, unique=True, verbose_name="Numéro SIREN")
-    code_naf = models.CharField(max_length=5, blank=True, verbose_name="Code NAF")
+    code_naf = models.CharField(max_length=255, blank=True, verbose_name="Code NAF")
     secteur = models.CharField(max_length=255, blank=True, verbose_name="Secteur d'activité")
     activite_detaille = models.TextField(blank=True, verbose_name="Activité détaillée")
     numero_standard = models.CharField(max_length=20, blank=True, verbose_name="Numéro de téléphone standard")

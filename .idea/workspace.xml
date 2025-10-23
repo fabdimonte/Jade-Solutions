@@ -4,11 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c3336972-4d6c-47c3-a5fd-566c2a82b3f6" name="Changes" comment="Ajout Mandats">
+    <list default="true" id="c3336972-4d6c-47c3-a5fd-566c2a82b3f6" name="Changes" comment="Updates divers front contacts et mandats">
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/MandatContreparties.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/MandatInfo.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/pages/GroupeListPage.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/pages/MandatDetailPage.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ContactFormModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ContactFormModal.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/SocieteInfo.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/SocieteInfo.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/SocieteMandats.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/SocieteMandats.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/SocieteDetailPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SocieteDetailPage.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,7 +118,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760985489531</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Updates divers front contacts et mandats">
+      <option name="closed" value="true" />
+      <created>1760993495250</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1760993495250</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -119,6 +135,7 @@
     <MESSAGE value="Ajout du fichier README pour github" />
     <MESSAGE value="Ajout frontend pour github" />
     <MESSAGE value="Ajout Mandats" />
-    <option name="LAST_COMMIT_MESSAGE" value="Ajout Mandats" />
+    <MESSAGE value="Updates divers front contacts et mandats" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updates divers front contacts et mandats" />
   </component>
 </project>

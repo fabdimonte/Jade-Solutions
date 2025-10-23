@@ -1,5 +1,6 @@
 // src/components/SocieteMandats.jsx
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 
 // On va créer une petite fonction pour "traduire" les codes de l'API
 const getStatutLabel = (statut) => {
@@ -54,7 +55,7 @@ function SocieteMandats({ societeId, listVersion, onAddMandatClick, onEditMandat
 
   return (
     <div>
-      {/* On ajoutera un bouton "+ Ajouter Mandat" ici plus tard */}
+      {/* Bouton "+ Ajouter Mandat" ici */}
       <div style={{ marginBottom: '15px' }}>
         <button type="button" onClick={onAddMandatClick}>
           + Ajouter un mandat
@@ -70,14 +71,19 @@ function SocieteMandats({ societeId, listVersion, onAddMandatClick, onEditMandat
             <li key={mandat.id} style={{ border: '1px solid #ddd', padding: '10px', marginBottom: '5px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <strong>{mandat.nom_mandat}</strong>
+                  {/* TRANSFORMER LE TITRE EN LIEN */}
+                  <strong>
+                    <Link to={`/mandats/${mandat.id}`}>
+                      {mandat.nom_mandat}
+                    </Link>
+                  </strong>
                   <br />
                   Type: {getTypeLabel(mandat.type_mandat)} | Statut: {getStatutLabel(mandat.statut)}
                   <br />
                   Valorisation estimée: {mandat.valorisation_estimee ? `${mandat.valorisation_estimee} €` : 'N/A'}
                 </div>
                 <div>
-                  {/* On ajoutera les boutons Modifier/Supprimer ici */}
+                  {/* Boutons Modifier/Supprimer ici */}
                   <button
                     type="button"
                     style={{ marginLeft: '10px' }}
