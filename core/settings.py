@@ -146,7 +146,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Autorise l'application React (qui tourne sur le port 5173) à faire des requêtes
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
 ]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'authorization', # Important pour le Token
+    'content-type',
+    'origin',
+    'x-csrftoken',
+    'x-requested-with',
+]
+CORS_ALLOW_CREDENTIALS = True # Utile si tu utilises des cookies plus tard
 
 # --- Configuration Allauth ---
 SITE_ID = 1

@@ -1,149 +1,246 @@
 // src/components/MandatFormModal.jsx
 import React, { useState, useEffect } from 'react';
-import { fetchGetData } from '../apiClient';
+// 1. Importer fetchMutateData
+import { fetchMutateData } from '../apiClient';
 
-// (On peut copier-coller les styles de l'autre modale)
+// --- Imports MUI ---
+import { Dialog,  DialogTitle,  DialogContent,  DialogActions,  TextField,  Button,  Select,  MenuItem,  FormControl,  InputLabel,
+  Grid,  Box,  CircularProgress,  Alert,  IconButton, Typography, List, ListItem, ListItemText, ListItemSecondaryAction,  Paper, Link,
+  Container, Chip, Divider, AppBar, Toolbar, Tabs, Tab } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EventIcon from '@mui/icons-material/Event';
+import PersonIcon from '@mui/icons-material/Person';
+
+// Styles (assurez-vous qu'ils sont définis ou copiés)
 const modalStyles = {
-  overlay: {
-    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex',
-    justifyContent: 'center', alignItems: 'center', zIndex: 1000,
-  },
-  content: {
-    backgroundColor: 'white', padding: '20px', borderRadius: '8px',
-    width: '600px', position: 'relative', color: 'black',
-  },
-  closeButton: {
-    position: 'absolute', top: '10px', right: '10px', cursor: 'pointer',
-    border: 'none', background: 'transparent', fontSize: '1.5rem',
-  }
+  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
+  content: { backgroundColor: 'white', padding: '25px', borderRadius: '8px', width: '600px', maxWidth: '90%', position: 'relative', color: 'black' },
+  closeButton: { position: 'absolute', top: '10px', right: '15px', cursor: 'pointer', border: 'none', background: 'transparent', fontSize: '1.8rem', color: '#666' }
 };
 
+// 2. Recevoir authToken en prop
 function MandatFormModal({ isOpen, onClose, societeId, onSaveSuccess, mandatToEdit, authToken }) {
 
-  const [formData, setFormData] = useState({
+  // État initial du formulaire
+  const initialFormData = {
     nom_mandat: '',
     type_mandat: 'SELL', // Valeur par défaut
     statut: 'PROSP',     // Valeur par défaut
     phase: '',
     valorisation_estimee: '',
     honoraires_estimes: '',
-  });
+    client: societeId, // Pré-remplir avec l'ID de la société parente
+  };
+  const [formData, setFormData] = useState(initialFormData);
+  const [error, setError] = useState(''); // Pour afficher les erreurs
+  const [loadingSubmit, setLoadingSubmit] = useState(false); // Pour le bouton submit
 
-  // Gérer le pré-remplissage pour la modification (pour plus tard)
+  // Gérer le pré-remplissage pour la modification
   useEffect(() => {
-    if (mandatToEdit) {
-      setFormData({
-        nom_mandat: mandatToEdit.nom_mandat || '',
-        type_mandat: mandatToEdit.type_mandat || 'SELL',
-        statut: mandatToEdit.statut || 'PROSP',
-        phase: mandatToEdit.phase || '',
-        valorisation_estimee: mandatToEdit.valorisation_estimee || '',
-        honoraires_estimes: mandatToEdit.honoraires_estimes || '',
-      });
-    } else {
-      // Reset pour la création
-      setFormData({
-        nom_mandat: '', type_mandat: 'SELL', statut: 'PROSP',
-        phase: '', valorisation_estimee: '', honoraires_estimes: '',
-      });
+    if (isOpen) { // Reset/Populate only when opening
+      setError(''); // Clear previous errors
+      if (mandatToEdit) {
+        setFormData({
+          nom_mandat: mandatToEdit.nom_mandat || '',
+          type_mandat: mandatToEdit.type_mandat || 'SELL',
+          statut: mandatToEdit.statut || 'PROSP',
+          phase: mandatToEdit.phase || '',
+          // Utiliser nullish coalescing (??) pour gérer 0 vs null/undefined
+          valorisation_estimee: mandatToEdit.valorisation_estimee ?? '',
+          honoraires_estimes: mandatToEdit.honoraires_estimes ?? '',
+          client: mandatToEdit.client || societeId, // Garder le client existant si modification
+        });
+      } else {
+        // Reset pour la création, en s'assurant que client est bien societeId
+        setFormData({...initialFormData, client: societeId });
+      }
     }
-  }, [mandatToEdit, isOpen, authToken]);
+  }, [mandatToEdit, isOpen, societeId]); // Ajouter societeId aux dépendances
 
+  // Gérer les changements de champs
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({ ...prevData, [name]: value }));
+    const { name, value, type } = e.target;
+    let finalValue = value;
+    if (type === 'number') {
+      finalValue = value === '' ? null : parseFloat(value);
+    }
+    setFormData(prevData => ({ ...prevData, [name]: finalValue }));
   };
 
-  const handleSubmit = (e) => {
+  // Gérer la soumission du formulaire (corrigée)
+  const handleSubmit = async (e) => { // Ajouter async
     e.preventDefault();
+    setError('');
+    setLoadingSubmit(true);
 
     const isEditing = mandatToEdit && mandatToEdit.id;
 
-    // On ajoute 'client' aux données. L'ID de la société sur laquelle on
-    // se trouve est considéré comme le 'client' par défaut.
-    const dataToSend = { ...formData, client: societeId };
+    // S'assurer que les champs numériques vides sont envoyés comme null
+    const dataToSend = {
+        ...formData,
+        valorisation_estimee: formData.valorisation_estimee === '' ? null : formData.valorisation_estimee,
+        honoraires_estimes: formData.honoraires_estimes === '' ? null : formData.honoraires_estimes,
+        client: formData.client // Client ID should be set
+    };
+    // Ne pas inclure client_nom ou les listes ManyToMany
+    delete dataToSend.client_nom;
+    delete dataToSend.acheteurs_potentiels;
+    delete dataToSend.cedants_potentiels;
 
-    const url = isEditing
-      ? `http://127.0.0.1:8000/api/mandats/${mandatToEdit.id}/`
-      : 'http://127.0.0.1:8000/api/mandats/';
+
+    const url = isEditing ? `/mandats/${mandatToEdit.id}/` : '/mandats/';
     const method = isEditing ? 'PUT' : 'POST';
 
-    fetch(url, {
-      method: method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dataToSend),
-    })
-    .then(response => {
-      if (response.ok) {
-        onSaveSuccess(); // Succès !
-      } else {
-        response.json().then(errors => {
-          console.error("Erreur de validation:", errors);
-          alert(`Erreur de sauvegarde :\n${JSON.stringify(errors)}`);
-        });
+    try {
+      // 3. Utiliser fetchMutateData avec authToken
+      await fetchMutateData(method, url, dataToSend, authToken);
+      onSaveSuccess(); // Appelle le parent pour rafraîchir et fermer
+    } catch (err) {
+      console.error("Erreur sauvegarde mandat:", err);
+      let errorMessage = "Une erreur est survenue.";
+      if (err.errors) {
+         errorMessage = `Erreur(s):\n${JSON.stringify(err.errors)}`;
+      } else if (err.message) {
+          errorMessage = err.message;
       }
-    })
-    .catch(error => console.error("Erreur API:", error));
+      setError(errorMessage);
+    } finally {
+      setLoadingSubmit(false);
+    }
   };
 
+  // Ne rien rendre si la modale n'est pas ouverte
   if (!isOpen) return null;
 
+  // Rendu de la modale
+  // --- Rendu avec MUI Dialog ---
   return (
-    <div style={modalStyles.overlay} onClick={onClose}>
-      <div style={modalStyles.content} onClick={e => e.stopPropagation()}>
-        <button style={modalStyles.closeButton} onClick={onClose}>&times;</button>
-        <h2>{mandatToEdit ? 'Modifier le mandat' : 'Ajouter un nouveau mandat'}</h2>
+    <Dialog open={isOpen} onClose={onClose} maxWidth="sm" fullWidth disableEscapeKeyDown={loadingSubmit}>
+      <Box component="form" onSubmit={handleSubmit}>
+        <DialogTitle sx={{ pb: 1 }}>
+          {mandatToEdit ? 'Modifier le mandat' : 'Ajouter un nouveau mandat'}
+          <IconButton aria-label="close" onClick={onClose} disabled={loadingSubmit}
+            sx={{ position: 'absolute', right: 8, top: 8, color: (theme) => theme.palette.grey[500] }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+        <DialogContent>
+          {/* Affichage d'erreur globale */}
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-            <div style={{ gridColumn: '1 / -1' }}>
-              <label>Nom du mandat (ex: Projet Phoenix):</label>
-              <input type="text" name="nom_mandat" value={formData.nom_mandat} onChange={handleChange} required style={{width: '100%'}} />
-            </div>
+          {/* Grid container (parent reste inchangé) */}
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            {/* Grid enfants corrigés (sans 'item', avec 'size') */}
+            <Grid size={12}> {/* <-- CORRIGÉ */}
+              <TextField label="Nom du mandat" name="nom_mandat" value={formData.nom_mandat} onChange={handleChange} required fullWidth disabled={loadingSubmit}/>
+            </Grid>
 
-            <div>
-              <label>Type de mandat:</label>
-              <select name="type_mandat" value={formData.type_mandat} onChange={handleChange} style={{width: '100%'}}>
-                <option value="SELL">Sell-Side (Cession)</option>
-                <option value="BUY">Buy-Side (Acquisition)</option>
-                <option value="FUND">Levée de fonds</option>
-                <option value="AUTRE">Autre</option>
-              </select>
-            </div>
+            {/* Champ Client (non modifiable, informatif) */}
+            <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+               <TextField label="Client (Société ID)" name="client" type="number" value={formData.client || ''} disabled fullWidth sx={{bgcolor: 'grey.100'}}/>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}></Grid> {/* Placeholder */} {/* <-- CORRIGÉ */}
 
-            <div>
-              <label>Statut:</label>
-              <select name="statut" value={formData.statut} onChange={handleChange} style={{width: '100%'}}>
-                <option value="PROSP">Prospection</option>
-                <option value="EN_COURS">En cours</option>
-                <option value="CLOSING">En closing</option>
-                <option value="TERMINE">Terminé</option>
-                <option value="ABANDONNE">Abandonné</option>
-              </select>
-            </div>
 
-            <div>
-              <label>Valorisation estimée (€):</label>
-              <input type="number" name="valorisation_estimee" value={formData.valorisation_estimee} onChange={handleChange} style={{width: '100%'}} />
-            </div>
+            <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+              <FormControl fullWidth required disabled={loadingSubmit}>
+                <InputLabel id="type-mandat-label">Type de mandat</InputLabel>
+                <Select
+                  labelId="type-mandat-label"
+                  id="type_mandat"
+                  name="type_mandat"
+                  value={formData.type_mandat}
+                  label="Type de mandat"
+                  onChange={handleChange}
+                >
+                  <MenuItem value="SELL">Sell-Side (Cession)</MenuItem>
+                  <MenuItem value="BUY">Buy-Side (Acquisition)</MenuItem>
+                  <MenuItem value="FUND">Levée de fonds</MenuItem>
+                  <MenuItem value="AUTRE">Autre</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
 
-            <div>
-              <label>Honoraires estimés (€):</label>
-              <input type="number" name="honoraires_estimes" value={formData.honoraires_estimes} onChange={handleChange} style={{width: '100%'}} />
-            </div>
+            <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+              <FormControl fullWidth required disabled={loadingSubmit}>
+                <InputLabel id="statut-mandat-label">Statut</InputLabel>
+                <Select
+                  labelId="statut-mandat-label"
+                  id="statut"
+                  name="statut"
+                  value={formData.statut}
+                  label="Statut"
+                  onChange={handleChange}
+                >
+                  <MenuItem value="PROSP">Prospection</MenuItem>
+                  <MenuItem value="EN_COURS">En cours</MenuItem>
+                  <MenuItem value="CLOSING">En closing</MenuItem>
+                  <MenuItem value="TERMINE">Terminé</MenuItem>
+                  <MenuItem value="ABANDONNE">Abandonné</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
 
-            {/* On pourrait aussi ajouter le champ 'phase' ici si besoin */}
+            <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+               <FormControl fullWidth disabled={loadingSubmit}>
+                <InputLabel id="phase-mandat-label">Phase</InputLabel>
+                <Select
+                  labelId="phase-mandat-label"
+                  id="phase"
+                  name="phase"
+                  value={formData.phase || ''}
+                  label="Phase"
+                  onChange={handleChange}
+                  // displayEmpty // displayEmpty peut causer des problèmes de label, on l'enlève
+                >
+                  <MenuItem value=""><em>(Aucune)</em></MenuItem>
+                  <MenuItem value="PREPA">Préparation (Teaser, IM)</MenuItem>
+                  <MenuItem value="MARKET">Phase de marketing</MenuItem>
+                  <MenuItem value="NEGO">Négociation (LOI)</MenuItem>
+                  <MenuItem value="DUE_DIL">Due Diligence</MenuItem>
+                  <MenuItem value="SIGN">Signature (SPA)</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}></Grid> {/* Placeholder */} {/* <-- CORRIGÉ */}
 
-          </div>
-          <div style={{ marginTop: '20px', textAlign: 'right' }}>
-            <button type="button" onClick={onClose} style={{ marginRight: '10px' }}>Annuler</button>
-            <button type="submit" style={{ backgroundColor: 'blue', color: 'white' }}>Enregistrer</button>
-          </div>
-        </form>
-      </div>
-    </div>
+
+            <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+              <TextField label="Valorisation estimée (€)" name="valorisation_estimee" type="number" step="0.01" value={formData.valorisation_estimee || ''} onChange={handleChange} fullWidth disabled={loadingSubmit}/>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+              <TextField label="Honoraires estimés (€)" name="honoraires_estimes" type="number" step="0.01" value={formData.honoraires_estimes || ''} onChange={handleChange} fullWidth disabled={loadingSubmit}/>
+            </Grid>
+
+          </Grid> {/* Fin Grid container */}
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={onClose} disabled={loadingSubmit} color="inherit">
+            Annuler
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={loadingSubmit}
+            startIcon={loadingSubmit ? <CircularProgress size={20} color="inherit" /> : null}
+          >
+            {loadingSubmit ? 'Enregistrement...' : 'Enregistrer'}
+          </Button>
+        </DialogActions>
+      </Box> {/* Fin du Box form */}
+    </Dialog>
   );
 }
 

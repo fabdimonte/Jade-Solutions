@@ -1,89 +1,151 @@
 // src/components/MandatInfo.jsx
 import React from 'react';
-import { fetchGetData } from '../apiClient';
 
-// Ce composant "bête" ne fait qu'afficher le formulaire
-function MandatInfo({ formData, handleChange, authToken }) {
+// --- Imports MUI ---
+import { Dialog,  DialogTitle,  DialogContent,  DialogActions,  TextField,  Button,  Select,  MenuItem,  FormControl,  InputLabel,
+  Grid,  Box,  CircularProgress,  Alert,  IconButton, Typography, List, ListItem, ListItemText, ListItemSecondaryAction,  Paper, Link,
+  Container, Chip, Divider, AppBar, Toolbar, Tabs, Tab } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EventIcon from '@mui/icons-material/Event';
+import PersonIcon from '@mui/icons-material/Person';
+
+// Ce composant "bête" ne fait qu'afficher le formulaire et remonter les changements
+function MandatInfo({ formData, handleChange }) {
+
+  // --- Rendu avec MUI Grid v6+ ---
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-      <div>
-        <label>Nom du mandat:</label>
-        <input
-          type="text"
+    // Grid container (parent reste inchangé)
+    <Grid container spacing={2}>
+
+      {/* --- Section Identification --- */}
+      {/* Optionnel: Titre de section */}
+      {/* <Grid size={12}><Typography variant="subtitle1" gutterBottom>Détails</Typography></Grid> */}
+
+      {/* Grid enfants corrigés (sans 'item', avec 'size') */}
+      <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+        <TextField
+          label="Nom du mandat"
           name="nom_mandat"
           value={formData.nom_mandat || ''}
           onChange={handleChange}
           required
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          fullWidth
         />
-      </div>
+      </Grid>
 
-      <div>
-        <label>Client :</label>
-        <input
-          type="text"
+      <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+        <TextField
+          label="Client"
           name="client_nom"
-          value={formData.client_nom || ''}
+          value={formData.client_nom || (formData.client ? `ID: ${formData.client}`: '')}
           disabled
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box', background: '#eee' }}
+          fullWidth
+          sx={{ '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: '#000', backgroundColor: '#eee' } }}
         />
-      </div>
+         <input type="hidden" name="client" value={formData.client || ''} />
+      </Grid>
 
-      <div>
-        <label>Type de mandat:</label>
-        <select name="type_mandat" value={formData.type_mandat || 'SELL'} onChange={handleChange} style={{width: '100%', padding: '8px'}}>
-          <option value="SELL">Sell-Side (Cession)</option>
-          <option value="BUY">Buy-Side (Acquisition)</option>
-          <option value="FUND">Levée de fonds</option>
-          <option value="AUTRE">Autre</option>
-        </select>
-      </div>
+      {/* --- Section Statut & Phase --- */}
+       <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+         <FormControl fullWidth required>
+           <InputLabel id="type-mandat-select-label">Type de mandat</InputLabel>
+           <Select
+             labelId="type-mandat-select-label"
+             id="type_mandat_select"
+             name="type_mandat"
+             value={formData.type_mandat || 'SELL'}
+             label="Type de mandat"
+             onChange={handleChange}
+           >
+             <MenuItem value="SELL">Sell-Side (Cession)</MenuItem>
+             <MenuItem value="BUY">Buy-Side (Acquisition)</MenuItem>
+             <MenuItem value="FUND">Levée de fonds</MenuItem>
+             <MenuItem value="AUTRE">Autre</MenuItem>
+           </Select>
+         </FormControl>
+       </Grid>
 
-      <div>
-        <label>Statut:</label>
-        <select name="statut" value={formData.statut || 'PROSP'} onChange={handleChange} style={{width: '100%', padding: '8px'}}>
-          <option value="PROSP">Prospection</option>
-          <option value="EN_COURS">En cours</option>
-          <option value="CLOSING">En closing</option>
-          <option value="TERMINE">Terminé</option>
-          <option value="ABANDONNE">Abandonné</option>
-        </select>
-      </div>
+      <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+        <FormControl fullWidth required>
+          <InputLabel id="statut-mandat-select-label">Statut</InputLabel>
+          <Select
+            labelId="statut-mandat-select-label"
+            id="statut_select"
+            name="statut"
+            value={formData.statut || 'PROSP'}
+            label="Statut"
+            onChange={handleChange}
+          >
+            <MenuItem value="PROSP">Prospection</MenuItem>
+            <MenuItem value="EN_COURS">En cours</MenuItem>
+            <MenuItem value="CLOSING">En closing</MenuItem>
+            <MenuItem value="TERMINE">Terminé</MenuItem>
+            <MenuItem value="ABANDONNE">Abandonné</MenuItem>
+          </Select>
+        </FormControl>
+      </Grid>
 
-      <div>
-        <label>Phase:</label>
-        <select name="phase" value={formData.phase || ''} onChange={handleChange} style={{width: '100%', padding: '8px'}}>
-          <option value="">(Aucune)</option>
-          <option value="PREPA">Préparation (Teaser, IM)</option>
-          <option value="MARKET">Phase de marketing</option>
-          <option value="NEGO">Négociation (LOI)</option>
-          <option value="DUE_DIL">Due Diligence</option>
-          <option value="SIGN">Signature (SPA)</option>
-        </select>
-      </div>
+      <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+        <FormControl fullWidth>
+          <InputLabel id="phase-mandat-select-label">Phase</InputLabel>
+          <Select
+            labelId="phase-mandat-select-label"
+            id="phase_select"
+            name="phase"
+            value={formData.phase || ''}
+            label="Phase"
+            onChange={handleChange}
+            displayEmpty
+          >
+            <MenuItem value=""><em></em></MenuItem>
+            <MenuItem value="PREPA">Préparation (Teaser, IM)</MenuItem>
+            <MenuItem value="MARKET">Phase de marketing</MenuItem>
+            <MenuItem value="NEGO">Négociation (LOI)</MenuItem>
+            <MenuItem value="DUE_DIL">Due Diligence</MenuItem>
+            <MenuItem value="SIGN">Signature (SPA)</MenuItem>
+          </Select>
+        </FormControl>
+      </Grid>
+      {/* Placeholder pour aligner la grille */}
+      <Grid size={{ xs: 12, sm: 6 }}></Grid> {/* <-- CORRIGÉ */}
 
-      <div>
-        <label>Valorisation estimée (€):</label>
-        <input
-          type="number"
+      {/* --- Section Financier --- */}
+      {/* Optionnel: Titre de section */}
+      {/* <Grid size={12}><Typography variant="subtitle1" gutterBottom sx={{mt: 1}}>Financier</Typography></Grid> */}
+
+      <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+        <TextField
+          label="Valorisation estimée (€)"
           name="valorisation_estimee"
-          value={formData.valorisation_estimee || ''}
-          onChange={handleChange}
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-        />
-      </div>
-
-      <div>
-        <label>Honoraires estimés (€):</label>
-        <input
           type="number"
-          name="honoraires_estimes"
-          value={formData.honoraires_estimes || ''}
+          value={formData.valorisation_estimee ?? ''}
           onChange={handleChange}
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          fullWidth
+          InputProps={{ inputProps: { step: 0.01 } }}
         />
-      </div>
-    </div>
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}> {/* <-- CORRIGÉ */}
+        <TextField
+          label="Honoraires estimés (€)"
+          name="honoraires_estimes"
+          type="number"
+          value={formData.honoraires_estimes ?? ''}
+          onChange={handleChange}
+          fullWidth
+          InputProps={{ inputProps: { step: 0.01 } }}
+        />
+      </Grid>
+
+    </Grid> // Fin Grid container
   );
 }
 

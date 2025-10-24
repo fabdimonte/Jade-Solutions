@@ -1,240 +1,136 @@
 // src/components/SocieteInfo.jsx
+// Version actuelle (complète, avec tous les champs)
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { fetchGetData } from '../apiClient';
+import { Link as RouterLink } from 'react-router-dom';
 
-function SocieteInfo({ formData, handleChange, authToken }) {
+// --- Imports MUI ---
+import { Dialog,  DialogTitle,  DialogContent,  DialogActions,  TextField,  Button,  Select,  MenuItem,  FormControl,  InputLabel,
+  Grid,  Box,  CircularProgress,  Alert,  IconButton, Typography, List, ListItem, ListItemText, ListItemSecondaryAction,  Paper, Link,
+  Container, Chip, Divider, AppBar, Toolbar, Tabs, Tab } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EventIcon from '@mui/icons-material/Event';
+import PersonIcon from '@mui/icons-material/Person';
 
-  // Style pour les inputs, pour éviter la répétition
-  const inputStyle = {
-    width: '100%',
-    padding: '8px',
-    boxSizing: 'border-box'
-  };
+function SocieteInfo({ formData, handleChange }) {
 
-  // Style pour les inputs désactivés
-  const disabledInputStyle = {
-    ...inputStyle,
-    background: '#eee'
-  };
-
-  // Style pour les séparateurs
-  const separatorStyle = {
-    gridColumn: '1 / -1', // Prend toute la largeur de la grille
-    border: 0,
-    borderTop: '1px solid #ddd',
-    margin: '15px 0 5px 0'
-  };
+  // Style pour les inputs
+  const inputStyle = { width: '100%', padding: '8px', boxSizing: 'border-box' };
+  const disabledInputStyle = { ...inputStyle, background: '#eee' };
 
   return (
-    <>
-      {/* Grille principale à 3 colonnes */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+    <Box>
+      {/* Grid container (parent) */}
+      <Grid container spacing={2}>
 
         {/* --- Section Identification --- */}
-        <h4 style={{ gridColumn: '1 / -1', margin: 0 }}>Identification</h4>
-        <div>
-          <label>Nom de la société:</label>
-          <input type="text" name="nom" value={formData.nom || ''} onChange={handleChange} required style={inputStyle} />
-        </div>
-        <div>
-          <label>SIREN:</label>
-          <input type="text" name="siren" value={formData.siren || ''} onChange={handleChange} required style={inputStyle} />
-        </div>
-        <div>
-          <label>Code NAF:</label>
-          <input type="text" name="code_naf" value={formData.code_naf || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-
-        <div style={{ gridColumn: '1 / -1' }}>
-          <label>Activité détaillée:</label>
-          <textarea name="activite_detaille" value={formData.activite_detaille || ''} onChange={handleChange} style={{...inputStyle, height: '80px', fontFamily: 'inherit'}} />
-        </div>
-
-        <div>
-          <label>Secteur d'activité:</label>
-          <input type="text" name="secteur" value={formData.secteur || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Forme Juridique:</label>
-          <input type="text" name="forme_juridique" value={formData.forme_juridique || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Date de création:</label>
-          <input type="date" name="date_creation" value={formData.date_creation || ''} onChange={handleChange} style={inputStyle} />
-        </div>
+        {/* Titre (Syntaxe v6 : size={12}) */}
+        <Grid size={12}><Typography variant="h6" gutterBottom>Identification</Typography></Grid>
+        {/* Champs (Syntaxe v6 : size={{ xs: ..., sm: ..., md: ... }}) */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField label="Nom" name="nom" value={formData.nom || ''} onChange={handleChange} required fullWidth />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField label="SIREN" name="siren" value={formData.siren || ''} onChange={handleChange} required fullWidth inputProps={{ maxLength: 9 }}/>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField label="Code NAF" name="code_naf" value={formData.code_naf || ''} onChange={handleChange} fullWidth />
+        </Grid>
+        <Grid size={12}>
+          <TextField label="Activité détaillée" name="activite_detaille" value={formData.activite_detaille || ''} onChange={handleChange} multiline rows={3} fullWidth />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField label="Secteur" name="secteur" value={formData.secteur || ''} onChange={handleChange} fullWidth />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField label="Forme Juridique" name="forme_juridique" value={formData.forme_juridique || ''} onChange={handleChange} fullWidth />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField label="Date de création" name="date_creation" type="date" value={formData.date_creation || ''} onChange={handleChange} fullWidth InputLabelProps={{ shrink: true }} />
+        </Grid>
 
         {/* --- Section Coordonnées --- */}
-        <hr style={separatorStyle} />
-        <h4 style={{ gridColumn: '1 / -1', margin: 0 }}>Coordonnées</h4>
-        <div>
-          <label>Adresse:</label>
-          <input type="text" name="adresse" value={formData.adresse || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Code Postal:</label>
-          <input type="text" name="code_postal" value={formData.code_postal || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Ville:</label>
-          <input type="text" name="ville" value={formData.ville || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Région:</label>
-          <input type="text" name="region" value={formData.region || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Pays:</label>
-          <input type="text" name="pays" value={formData.pays || ''} onChange={handleChange} style={inputStyle} />
-        </div>
+        <Grid size={12} sx={{ mt: 2 }}><Typography variant="h6" gutterBottom>Coordonnées</Typography></Grid>
+        <Grid size={12}>
+          <TextField label="Adresse" name="adresse" value={formData.adresse || ''} onChange={handleChange} fullWidth />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <TextField label="Code Postal" name="code_postal" value={formData.code_postal || ''} onChange={handleChange} fullWidth />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <TextField label="Ville" name="ville" value={formData.ville || ''} onChange={handleChange} fullWidth />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <TextField label="Région" name="region" value={formData.region || ''} onChange={handleChange} fullWidth />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <TextField label="Pays" name="pays" value={formData.pays || ''} onChange={handleChange} fullWidth />
+        </Grid>
 
-        {/* --- Section Contact Standard --- */}
-        <hr style={separatorStyle} />
-        <h4 style={{ gridColumn: '1 / -1', margin: 0 }}>Contact Standard</h4>
-        <div>
-          <label>N° Standard:</label>
-          <input type="text" name="numero_standard" value={formData.numero_standard || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Email Standard:</label>
-          <input type="email" name="email_standard" value={formData.email_standard || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Effectif (précis):</label>
-          <input type="number" name="effectif" value={formData.effectif || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Site Web:</label>
-          <input type="url" name="site_web" value={formData.site_web || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Page LinkedIn:</label>
-          <input type="url" name="lien_linkedin" value={formData.lien_linkedin || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Tranche d'effectif:</label>
-          <input type="text" name="effectif_approximatif" value={formData.effectif_approximatif || ''} onChange={handleChange} style={inputStyle} />
-        </div>
+        {/* --- Section Contact Standard & Effectif --- */}
+        <Grid size={12} sx={{ mt: 2 }}><Typography variant="h6" gutterBottom>Contact & Effectif</Typography></Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField label="N° Standard" name="numero_standard" value={formData.numero_standard || ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField label="Email Standard" name="email_standard" type="email" value={formData.email_standard || ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField label="Effectif (précis)" name="effectif" type="number" value={formData.effectif ?? ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField label="Site Web" name="site_web" type="url" value={formData.site_web || ''} onChange={handleChange} fullWidth placeholder="https://..." /></Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField label="Page LinkedIn" name="lien_linkedin" type="url" value={formData.lien_linkedin || ''} onChange={handleChange} fullWidth placeholder="https://linkedin.com/company/..." /></Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField label="Tranche d'effectif" name="effectif_approximatif" value={formData.effectif_approximatif || ''} onChange={handleChange} fullWidth /></Grid>
 
         {/* --- Section Données Financières --- */}
-        <hr style={separatorStyle} />
-        <h4 style={{ gridColumn: '1 / -1', margin: 0 }}>Données Financières</h4>
-        <div>
-          <label>Dernière année dispo. (ex: 2024):</label>
-          <input type="number" name="derniere_annee_disponible" value={formData.derniere_annee_disponible || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Capital Social (€):</label>
-          <input type="number" name="capital_social" value={formData.capital_social || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Capitaux Propres (€):</label>
-          <input type="number" name="capitaux_propres" value={formData.capitaux_propres || ''} onChange={handleChange} style={inputStyle} />
-        </div>
+        <Grid size={12} sx={{ mt: 2 }}><Typography variant="h6" gutterBottom>Données Financières</Typography></Grid>
+        <Grid size={{ xs: 12, sm: 4 }}><TextField label="Dernière année dispo." name="derniere_annee_disponible" type="number" value={formData.derniere_annee_disponible ?? ''} onChange={handleChange} fullWidth placeholder="Ex: 2024" /></Grid>
+        <Grid size={{ xs: 12, sm: 4 }}><TextField label="Capital Social (€)" name="capital_social" type="number" step="0.01" value={formData.capital_social ?? ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 12, sm: 4 }}><TextField label="Capitaux Propres (€)" name="capitaux_propres" type="number" step="0.01" value={formData.capitaux_propres ?? ''} onChange={handleChange} fullWidth /></Grid>
+        {/* N */}
+        <Grid size={{ xs: 6, sm: 3 }}><TextField label="CA N (€)" name="ca_n" type="number" step="0.01" value={formData.ca_n ?? ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 6, sm: 3 }}><TextField label="Res. Exp. N (€)" name="resultat_exploitation_n" type="number" step="0.01" value={formData.resultat_exploitation_n ?? ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 6, sm: 3 }}><TextField label="Res. Net N (€)" name="resultat_net_n" type="number" step="0.01" value={formData.resultat_net_n ?? ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 6, sm: 3 }}><TextField label="EBITDA N (€)" name="ebitda_n" type="number" step="0.01" value={formData.ebitda_n ?? ''} onChange={handleChange} fullWidth /></Grid>
+        {/* N-1 */}
+        <Grid size={{ xs: 6, sm: 3 }}><TextField label="CA N-1 (€)" name="ca_n1" type="number" step="0.01" value={formData.ca_n1 ?? ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 6, sm: 3 }}><TextField label="Res. Exp. N-1 (€)" name="resultat_exploitation_n1" type="number" step="0.01" value={formData.resultat_exploitation_n1 ?? ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 6, sm: 3 }}><TextField label="Res. Net N-1 (€)" name="resultat_net_n1" type="number" step="0.01" value={formData.resultat_net_n1 ?? ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 6, sm: 3 }}><TextField label="EBITDA N-1 (€)" name="ebitda_n1" type="number" step="0.01" value={formData.ebitda_n1 ?? ''} onChange={handleChange} fullWidth /></Grid>
+        {/* N-2 */}
+        <Grid size={{ xs: 6, sm: 3 }}><TextField label="CA N-2 (€)" name="ca_n2" type="number" step="0.01" value={formData.ca_n2 ?? ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 6, sm: 3 }}><TextField label="Res. Exp. N-2 (€)" name="resultat_exploitation_n2" type="number" step="0.01" value={formData.resultat_exploitation_n2 ?? ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 6, sm: 3 }}><TextField label="Res. Net N-2 (€)" name="resultat_net_n2" type="number" step="0.01" value={formData.resultat_net_n2 ?? ''} onChange={handleChange} fullWidth /></Grid>
+        <Grid size={{ xs: 6, sm: 3 }}><TextField label="EBITDA N-2 (€)" name="ebitda_n2" type="number" step="0.01" value={formData.ebitda_n2 ?? ''} onChange={handleChange} fullWidth /></Grid>
 
-        {/* Année N */}
-        <div>
-          <label>Chiffre d'affaires N (€):</label>
-          <input type="number" name="ca_n" value={formData.ca_n || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Résultat d'exploitation N (€):</label>
-          <input type="number" name="resultat_exploitation_n" value={formData.resultat_exploitation_n || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Résultat net N (€):</label>
-          <input type="number" name="resultat_net_n" value={formData.resultat_net_n || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>EBITDA N (€):</label>
-          <input type="number" name="ebitda_n" value={formData.ebitda_n || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div />
-        <div />
+        {/* --- Section Groupe --- */}
+        <Grid size={12} sx={{ mt: 2 }}><Typography variant="h6" gutterBottom>Groupe</Typography></Grid>
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField label="Maison Mère" name="maison_mere_nom" value={formData.maison_mere_nom || (formData.maison_mere ? `ID: ${formData.maison_mere}`: '')} disabled fullWidth sx={disabledInputStyle}/>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField label="Modifier Maison Mère (ID)" name="maison_mere" type="number" value={formData.maison_mere || ''} onChange={handleChange} placeholder="Entrer l'ID" fullWidth />
+        </Grid>
 
-        {/* Année N-1 */}
-        <div>
-          <label>Chiffre d'affaires N-1 (€):</label>
-          <input type="number" name="ca_n1" value={formData.ca_n1 || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Résultat d'exploitation N-1 (€):</label>
-          <input type="number" name="resultat_exploitation_n1" value={formData.resultat_exploitation_n1 || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Résultat net N-1 (€):</label>
-          <input type="number" name="resultat_net_n1" value={formData.resultat_net_n1 || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>EBITDA N-1 (€):</label>
-          <input type="number" name="ebitda_n1" value={formData.ebitda_n1 || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div />
-        <div />
+      </Grid> {/* Fin Grid container principal */}
 
-        {/* Année N-2 */}
-        <div>
-          <label>Chiffre d'affaires N-2 (€):</label>
-          <input type="number" name="ca_n2" value={formData.ca_n2 || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Résultat d'exploitation N-2 (€):</label>
-          <input type="number" name="resultat_exploitation_n2" value={formData.resultat_exploitation_n2 || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>Résultat net N-2 (€):</label>
-          <input type="number" name="resultat_net_n2" value={formData.resultat_net_n2 || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-        <div>
-          <label>EBITDA N-2 (€):</label>
-          <input type="number" name="ebitda_n2" value={formData.ebitda_n2 || ''} onChange={handleChange} style={inputStyle} />
-        </div>
-
-        {/* --- Section Groupe / Filiales --- */}
-        <hr style={separatorStyle} />
-        <h4 style={{ gridColumn: '1 / -1', margin: 0 }}>Groupe</h4>
-        <div>
-          <label>Maison Mère (Nom) :</label>
-          <input
-            type="text"
-            name="maison_mere_nom"
-            value={formData.maison_mere_nom || ''}
-            disabled
-            style={disabledInputStyle}
-          />
-        </div>
-        <div>
-          <label>Modifier Maison Mère (par ID) :</label>
-          <input
-            type="number"
-            name="maison_mere"
-            value={formData.maison_mere || ''}
-            onChange={handleChange}
-            placeholder="Entrer l'ID de la société mère"
-            style={inputStyle}
-          />
-        </div>
-
-      </div>
-
-      {/* --- Section Filiales (en dehors de la grille) --- */}
-      <div style={{ marginTop: '30px' }}>
-        <h3>Filiales</h3>
+      {/* --- Section Filiales --- */}
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h6" gutterBottom>Filiales ({formData.filiales?.length || 0})</Typography>
         {formData.filiales && formData.filiales.length > 0 ? (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
+          <List dense>
             {formData.filiales.map(filiale => (
-              <li key={filiale.id} style={{ border: '1px solid #ddd', padding: '10px', marginBottom: '5px' }}>
-                <Link to={`/societes/${filiale.id}`}>
-                  {filiale.nom} (ID: {filiale.id})
+              <ListItem key={filiale.id} disablePadding>
+                <Link component={RouterLink} to={`/societes/${filiale.id}`} sx={{ textDecoration: 'none', color: 'inherit', width: '100%' }}>
+                  <ListItemText primary={filiale.nom} secondary={`ID: ${filiale.id}`} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1, mb: 0.5, '&:hover': { bgcolor: 'action.hover' } }}/>
                 </Link>
-              </li>
+              </ListItem>
             ))}
-          </ul>
-        ) : (
-          <p>Cette société n'a pas de filiales enregistrées.</p>
-        )}
-      </div>
-    </>
+          </List>
+        ) : (<Typography color="text.secondary" sx={{ fontStyle: 'italic' }}>Cette société n'a pas de filiales enregistrées.</Typography>)}
+      </Box>
+    </Box>
   );
 }
 

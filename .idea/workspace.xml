@@ -4,30 +4,29 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c3336972-4d6c-47c3-a5fd-566c2a82b3f6" name="Changes" comment="Updates divers front contacts et mandats + ajout groupe">
-      <change afterPath="$PROJECT_DIR$/frontend/src/apiClient.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/InteractionFormModal.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/SocieteInteractions.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/LoginPage.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/MandatPipelinePage.jsx" afterDir="false" />
+    <list default="true" id="c3336972-4d6c-47c3-a5fd-566c2a82b3f6" name="Changes" comment="Update global + ajout Pipeline, Interaction + authentification">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/apiClient.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/apiClient.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/ContactFormModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ContactFormModal.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/InteractionFormModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/InteractionFormModal.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/MandatContreparties.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MandatContreparties.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/MandatFormModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MandatFormModal.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/MandatInfo.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MandatInfo.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/SocieteContacts.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/SocieteContacts.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/SocieteInfo.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/SocieteInfo.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/SocieteInteractions.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/SocieteInteractions.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/SocieteMandats.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/SocieteMandats.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/GroupeListPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/GroupeListPage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/LoginPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/LoginPage.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/MandatDetailPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MandatDetailPage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MandatPipelinePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MandatPipelinePage.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/SocieteCreatePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SocieteCreatePage.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/SocieteDetailPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SocieteDetailPage.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/SocieteListPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SocieteListPage.jsx" afterDir="false" />
@@ -67,16 +66,16 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;settings.sync&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "settings.editor.selected.configurable": "preferences.keymap"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -148,7 +147,15 @@
       <option name="project" value="LOCAL" />
       <updated>1761196137622</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Update global + ajout Pipeline, Interaction + authentification">
+      <option name="closed" value="true" />
+      <created>1761327706866</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1761327706866</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -159,6 +166,7 @@
     <MESSAGE value="Ajout Mandats" />
     <MESSAGE value="Updates divers front contacts et mandats" />
     <MESSAGE value="Updates divers front contacts et mandats + ajout groupe" />
-    <option name="LAST_COMMIT_MESSAGE" value="Updates divers front contacts et mandats + ajout groupe" />
+    <MESSAGE value="Update global + ajout Pipeline, Interaction + authentification" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update global + ajout Pipeline, Interaction + authentification" />
   </component>
 </project>

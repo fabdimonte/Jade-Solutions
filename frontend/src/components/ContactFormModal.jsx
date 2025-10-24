@@ -1,48 +1,57 @@
 // src/components/ContactFormModal.jsx
 import React, { useState, useEffect } from 'react';
-import { fetchGetData } from '../apiClient';
+import { fetchGetData, fetchMutateData } from '../apiClient';
 
-// ... (les styles de la modale restent inchangés) ...
+// --- Imports MUI ---
+import { Dialog,  DialogTitle,  DialogContent,  DialogActions,  TextField,  Button,  Select,  MenuItem,  FormControl,  InputLabel,
+  Grid,  Box,  CircularProgress,  Alert,  IconButton, Typography, List, ListItem, ListItemText, ListItemSecondaryAction,  Paper, Link,
+  Container, Chip, Divider, AppBar, Toolbar, Tabs, Tab } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EventIcon from '@mui/icons-material/Event';
+import PersonIcon from '@mui/icons-material/Person';
+
+// Styles
 const modalStyles = {
-  overlay: {
-    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex',
-    justifyContent: 'center', alignItems: 'center', zIndex: 1000,
-  },
-  content: {
-    backgroundColor: 'white', padding: '20px', borderRadius: '8px',
-    width: '600px', position: 'relative', color: 'black',
-  },
-  closeButton: {
-    position: 'absolute', top: '10px', right: '10px', cursor: 'pointer',
-    border: 'none', background: 'transparent', fontSize: '1.5rem',
-  }
+  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
+  content: { backgroundColor: 'white', padding: '25px', borderRadius: '8px', width: '500px', maxWidth: '90%', position: 'relative', color: 'black' },
+  closeButton: { position: 'absolute', top: '10px', right: '15px', cursor: 'pointer', border: 'none', background: 'transparent', fontSize: '1.8rem', color: '#666' }
 };
 
-// 1. Accepter la nouvelle prop 'contactToEdit'
 function ContactFormModal({ isOpen, onClose, societeId, onSaveSuccess, contactToEdit, authToken }) {
 
   const [allGroupes, setAllGroupes] = useState([]);
-  // 2. L'état initial du formulaire est vide
+  const [loadingGroups, setLoadingGroups] = useState(false);
   const [formData, setFormData] = useState({
     prenom: '', nom: '', email: '', telephone_portable: '', fonction: '',
     groupes_ids: [],
   });
+  const [error, setError] = useState('');
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
 
-  // 3. useEffect pour charger les groupes disponibles
+  // Charger les groupes disponibles
   useEffect(() => {
-    // On charge les groupes uniquement si la modale est ouverte
     if (isOpen) {
-      fetch('http://127.0.0.1:8000/api/groupes/')
-        .then(res => res.json())
+      setLoadingGroups(true);
+      setError('');
+      fetchGetData('/groupes/', authToken)
         .then(data => setAllGroupes(data))
-        .catch(err => console.error("Erreur chargement groupes:", err));
+        .catch(err => {
+            console.error("Erreur chargement groupes:", err);
+            setError("Impossible de charger la liste des groupes.");
+        })
+        .finally(() => setLoadingGroups(false));
     }
   }, [isOpen, authToken]);
 
-  // 3. NOUVEAU : Un 'useEffect' qui surveille 'contactToEdit'
-  // Si on passe un contact à modifier, on remplit le formulaire avec ses données.
-  // Si 'contactToEdit' est null (création), on vide le formulaire.
+  // Pré-remplir le formulaire si contactToEdit est fourni
   useEffect(() => {
     if (contactToEdit) {
       setFormData({
@@ -59,135 +68,158 @@ function ContactFormModal({ isOpen, onClose, societeId, onSaveSuccess, contactTo
         groupes_ids: [],
       });
     }
-  }, [contactToEdit, isOpen]); // Se redéclenche si le contact ou l'ouverture change
+  }, [contactToEdit, isOpen]);
 
+  // --- Fonctions définies UNE SEULE FOIS ---
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevData => ({ ...prevData, [name]: value }));
   };
 
-  // 5. NOUVELLE fonction pour gérer les cases à cocher
   const handleCheckboxChange = (groupeId) => {
     setFormData(prevData => {
       const currentGroupes = prevData.groupes_ids;
       if (currentGroupes.includes(groupeId)) {
-        // Si déjà coché, on le retire
         return { ...prevData, groupes_ids: currentGroupes.filter(id => id !== groupeId) };
       } else {
-        // Sinon, on l'ajoute
         return { ...prevData, groupes_ids: [...currentGroupes, groupeId] };
       }
     });
   };
+  // --- Fin des définitions ---
 
-  // 4. Le handleSubmit gère maintenant les deux cas (POST ou PUT)
-  const handleSubmit = (e) => {
+  // Gérer la soumission du formulaire
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoadingSubmit(true);
 
-    // On détermine si on est en mode "modification"
     const isEditing = contactToEdit && contactToEdit.id;
-
-    // On prépare les données et l'URL
     const dataToSend = {
       prenom: formData.prenom,
       nom: formData.nom,
-      email: formData.email,
-      telephone_portable: formData.telephone_portable,
-      fonction: formData.fonction,
+      email: formData.email || null,
+      telephone_portable: formData.telephone_portable || null,
+      fonction: formData.fonction || null,
       societe: societeId,
-      groupes_ids: formData.groupes_ids, // <-- Notre champ est là
+      groupes_ids: formData.groupes_ids,
     };
-
-    const url = isEditing
-      ? `http://127.0.0.1:8000/api/contacts/${contactToEdit.id}/`
-      : 'http://127.0.0.1:8000/api/contacts/';
+    const url = isEditing ? `/contacts/${contactToEdit.id}/` : '/contacts/';
     const method = isEditing ? 'PUT' : 'POST';
 
-    fetch(url, {
-      method: method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dataToSend),
-    })
-    .then(response => {
-      if (response.ok) {
-        onSaveSuccess(); // Rafraîchit la liste et ferme la modale (géré par le parent)
-      } else {
-        response.json().then(errors => {
-          console.error("Erreur de validation:", errors);
-          let errorMessages = [];
-          for (const field in errors) {
-            errorMessages.push(`${field}: ${errors[field].join(', ')}`);
-          }
-          alert(`Erreur de sauvegarde :\n${errorMessages.join('\n')}`);
-        });
+    try {
+      await fetchMutateData(method, url, dataToSend, authToken);
+      onSaveSuccess();
+    } catch (err) {
+      console.error("Erreur sauvegarde contact:", err);
+      let errorMessage = "Une erreur est survenue.";
+      if (err.errors) {
+         errorMessage = `Erreur(s):\n${JSON.stringify(err.errors)}`;
+      } else if (err.message) {
+          errorMessage = err.message;
       }
-    })
-    .catch(error => console.error("Erreur API:", error));
+      setError(errorMessage);
+    } finally {
+      setLoadingSubmit(false);
+    }
   };
 
   if (!isOpen) return null;
 
-  // 5. On change le titre de la modale en fonction du mode
+  // Rendu de la modale (JSX reste identique)
   return (
-    <div style={modalStyles.overlay} onClick={onClose}>
-      <div style={modalStyles.content} onClick={e => e.stopPropagation()}>
-        <button style={modalStyles.closeButton} onClick={onClose}>&times;</button>
-        <h2>{contactToEdit ? 'Modifier le contact' : 'Ajouter un nouveau contact'}</h2>
+    <Dialog
+      open={isOpen} // Contrôle l'ouverture
+      onClose={onClose} // Fonction appelée à la fermeture (clic extérieur, Echap)
+      maxWidth="sm" // Largeur standard
+      fullWidth     // Prend toute la largeur disponible (dans la limite de maxWidth)
+      disableEscapeKeyDown={loadingSubmit} // Empêche Echap pendant la sauvegarde
+      // Gère la fermeture au clic extérieur, sauf si loadingSubmit est vrai
+      // onClose={(event, reason) => { if (reason !== 'backdropClick' || !loadingSubmit) { onClose(); } }}
+    >
+      {/* Utiliser Box pour pouvoir mettre le form à l'intérieur du Dialog */}
+      <Box component="form" onSubmit={handleSubmit}>
+        <DialogTitle sx={{ pb: 1 }}> {/* pb = padding bottom */}
+          {contactToEdit ? 'Modifier le contact' : 'Ajouter un nouveau contact'}
+          {/* Bouton de fermeture optionnel dans le titre */}
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            disabled={loadingSubmit}
+            sx={{ position: 'absolute', right: 8, top: 8, color: (theme) => theme.palette.grey[500] }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-            <div>
-              <label>Prénom:</label>
-              <input type="text" name="prenom" value={formData.prenom} onChange={handleChange} required style={{width: '100%'}} />
-            </div>
-            <div>
-              <label>Nom:</label>
-              <input type="text" name="nom" value={formData.nom} onChange={handleChange} required style={{width: '100%'}} />
-            </div>
-            <div style={{ gridColumn: '1 / -1' }}>
-              <label>Email:</label>
-              <input type="email" name="email" value={formData.email} onChange={handleChange} style={{width: '100%'}} />
-            </div>
-            <div>
-              <label>Téléphone Portable:</label>
-              <input type="text" name="telephone_portable" value={formData.telephone_portable} onChange={handleChange} style={{width: '100%'}} />
-            </div>
-            <div>
-              <label>Fonction:</label>
-              <input type="text" name="fonction" value={formData.fonction} onChange={handleChange} style={{width: '100%'}} />
-            </div>
-          </div>
+        <DialogContent>
+          {/* Affichage d'erreur globale */}
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-          {/* 7. NOUVELLE section pour les groupes */}
-          <hr style={{ margin: '20px 0' }} />
-          <h4>Groupes</h4>
-          <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ddd', padding: '10px' }}>
-            {allGroupes.length > 0 ? (
-              allGroupes.map(groupe => (
-                <div key={groupe.id}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={formData.groupes_ids.includes(groupe.id)}
-                      onChange={() => handleCheckboxChange(groupe.id)}
+          {/* Utiliser Grid pour mettre en page les champs */}
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12} sm={6}>
+              <TextField label="Prénom" name="prenom" value={formData.prenom} onChange={handleChange} required fullWidth disabled={loadingSubmit}/>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField label="Nom" name="nom" value={formData.nom} onChange={handleChange} required fullWidth disabled={loadingSubmit}/>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField label="Email" name="email" type="email" value={formData.email || ''} onChange={handleChange} fullWidth disabled={loadingSubmit}/>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField label="Téléphone Portable" name="telephone_portable" value={formData.telephone_portable || ''} onChange={handleChange} fullWidth disabled={loadingSubmit}/>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField label="Fonction" name="fonction" value={formData.fonction || ''} onChange={handleChange} fullWidth disabled={loadingSubmit}/>
+            </Grid>
+          </Grid>
+
+          {/* Section Groupes */}
+          <Box sx={{ mt: 3, borderTop: 1, borderColor: 'divider', pt: 2 }}>
+            <FormLabel component="legend">Groupes</FormLabel>
+            <Box sx={{ maxHeight: 150, overflowY: 'auto', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1, mt: 1 }}>
+              {loadingGroups ? <CircularProgress size={20} /> :
+               allGroupes.length > 0 ? (
+                <FormGroup>
+                  {allGroupes.map(groupe => (
+                    <FormControlLabel
+                      key={groupe.id}
+                      control={
+                        <Checkbox
+                          checked={formData.groupes_ids.includes(groupe.id)}
+                          onChange={() => handleCheckboxChange(groupe.id)}
+                          disabled={loadingSubmit}
+                          size="small"
+                        />
+                      }
+                      label={groupe.nom}
                     />
-                    {groupe.nom}
-                  </label>
-                </div>
-              ))
-            ) : (
-              <p>Aucun groupe trouvé. (Créez-en dans la page "Gestion des Groupes")</p>
-            )}
-          </div>
+                  ))}
+                </FormGroup>
+              ) : (
+                <Typography variant="body2" color="text.secondary">Aucun groupe disponible.</Typography>
+              )}
+            </Box>
+          </Box>
+        </DialogContent>
 
-          <div style={{ marginTop: '20px', textAlign: 'right' }}>
-            <button type="button" onClick={onClose} style={{ marginRight: '10px' }}>Annuler</button>
-            <button type="submit" style={{ backgroundColor: 'blue', color: 'white' }}>Enregistrer</button>
-          </div>
-
-        </form>
-      </div>
-    </div>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={onClose} disabled={loadingSubmit} color="inherit">
+            Annuler
+          </Button>
+          <Button
+            type="submit" // Le Box parent est le form
+            variant="contained"
+            color="primary"
+            disabled={loadingSubmit || loadingGroups} // Désactiver si chargement des groupes ou soumission
+            startIcon={loadingSubmit ? <CircularProgress size={20} color="inherit" /> : null}
+          >
+            {loadingSubmit ? 'Enregistrement...' : 'Enregistrer'}
+          </Button>
+        </DialogActions>
+      </Box> {/* Fin du Box form */}
+    </Dialog>
   );
 }
 

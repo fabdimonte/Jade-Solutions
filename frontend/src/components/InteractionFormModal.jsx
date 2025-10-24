@@ -1,157 +1,241 @@
 // src/components/InteractionFormModal.jsx
 import React, { useState, useEffect } from 'react';
-import { fetchGetData } from '../apiClient';
+// 1. Importer apiClient
+import { fetchGetData, fetchMutateData } from '../apiClient';
 
-// Styles (similaires aux autres modales)
+// --- Imports MUI ---
+import { Dialog,  DialogTitle,  DialogContent,  DialogActions,  TextField,  Button,  Select,  MenuItem,  FormControl,  InputLabel,
+  Grid,  Box,  CircularProgress,  Alert,  IconButton, Typography, List, ListItem, ListItemText, ListItemSecondaryAction,  Paper, Link,
+  Container, Chip, Divider, AppBar, Toolbar, Tabs, Tab } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EventIcon from '@mui/icons-material/Event';
+import PersonIcon from '@mui/icons-material/Person';
+
+// Styles (assurez-vous qu'ils sont définis ou copiés)
 const modalStyles = {
-  overlay: {
-    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex',
-    justifyContent: 'center', alignItems: 'center', zIndex: 1000,
-  },
-  content: {
-    backgroundColor: 'white', padding: '20px', borderRadius: '8px',
-    width: '600px', position: 'relative', color: 'black',
-  },
-  closeButton: {
-    position: 'absolute', top: '10px', right: '10px', cursor: 'pointer',
-    border: 'none', background: 'transparent', fontSize: '1.5rem',
-  }
+  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
+  content: { backgroundColor: 'white', padding: '25px', borderRadius: '8px', width: '500px', maxWidth: '90%', position: 'relative', color: 'black' },
+  closeButton: { position: 'absolute', top: '10px', right: '15px', cursor: 'pointer', border: 'none', background: 'transparent', fontSize: '1.8rem', color: '#666' }
 };
 
+// 2. Recevoir authToken en prop
 function InteractionFormModal({ isOpen, onClose, societeId, onSaveSuccess, authToken }) {
 
-  // États pour le formulaire
-  const [formData, setFormData] = useState({
+  // État initial du formulaire
+  const initialFormData = {
     contact: '', // ID du contact sélectionné
     type_interaction: 'APPEL',
-    date_interaction: new Date().toISOString().slice(0, 16), // Format datetime-local
+    // Mettre la date/heure actuelle au format 'YYYY-MM-DDTHH:mm'
+    date_interaction: new Date().toISOString().slice(0, 16),
     notes: '',
-  });
+  };
+  const [formData, setFormData] = useState(initialFormData);
 
-  // État pour stocker les contacts de la société
+  // États pour la liste des contacts et le chargement/erreur
   const [contactsSociete, setContactsSociete] = useState([]);
+  const [loadingContacts, setLoadingContacts] = useState(false);
+  const [error, setError] = useState(''); // Pour afficher les erreurs
+  const [loadingSubmit, setLoadingSubmit] = useState(false); // Pour le bouton submit
 
-  // Charger les contacts de la société quand la modale s'ouvre
+  // Charger les contacts de la société (corrigé)
   useEffect(() => {
+    // Ne charger que si la modale s'ouvre ET qu'on a un societeId
     if (isOpen && societeId) {
-      fetch(`http://127.0.0.1:8000/api/contacts/?societe_id=${societeId}`)
-        .then(res => res.json())
+      setLoadingContacts(true);
+      setError(''); // Reset error on open
+      // 3. Utiliser fetchGetData avec authToken
+      fetchGetData(`/contacts/?societe_id=${societeId}`, authToken)
         .then(data => setContactsSociete(data))
-        .catch(err => console.error("Erreur chargement contacts société:", err));
+        .catch(err => {
+            console.error("Erreur chargement contacts société:", err);
+            setError("Impossible de charger les contacts de la société.");
+        })
+        .finally(() => setLoadingContacts(false));
 
-      // Reset formulaire à l'ouverture
-      setFormData({
-        contact: '',
-        type_interaction: 'APPEL',
-        date_interaction: new Date().toISOString().slice(0, 16),
-        notes: '',
-      });
+      // Réinitialiser le formulaire à chaque ouverture
+      setFormData(initialFormData);
+
+    } else if (!isOpen) {
+       // Optionnel: Vider la liste des contacts quand la modale se ferme
+       setContactsSociete([]);
     }
+  // 4. Dépendre de isOpen, societeId et authToken
   }, [isOpen, societeId, authToken]);
 
+  // Gérer les changements de champs (inchangé)
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  // Gérer la soumission du formulaire (corrigée)
+  const handleSubmit = async (e) => { // Ajouter async
     e.preventDefault();
+    setError('');
+    setLoadingSubmit(true);
 
-    // On n'envoie pas societeId, le backend le déduit du contact
-    const dataToSend = { ...formData };
+    // Préparer les données (le backend déduira 'societe' du 'contact')
+    const dataToSend = {
+        contact: formData.contact, // Doit être l'ID du contact
+        type_interaction: formData.type_interaction,
+        date_interaction: formData.date_interaction, // S'assurer que le format est correct (ISO est OK)
+        notes: formData.notes,
+        // On n'envoie PAS societeId ici, car le backend le gère via la ForeignKey 'contact'
+    };
 
-    fetch('http://127.0.0.1:8000/api/interactions/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dataToSend),
-    })
-    .then(response => {
-      if (response.ok) {
-        onSaveSuccess(); // Rafraîchit la liste et ferme
-      } else {
-        response.json().then(errors => {
-          console.error("Erreur validation interaction:", errors);
-          alert(`Erreur sauvegarde :\n${JSON.stringify(errors)}`);
-        });
+    // Vérification simple que le contact est sélectionné
+    if (!dataToSend.contact) {
+        setError("Veuillez sélectionner un contact.");
+        setLoadingSubmit(false);
+        return;
+    }
+
+
+    try {
+      // 5. Utiliser fetchMutateData avec authToken pour POST
+      await fetchMutateData('POST', '/interactions/', dataToSend, authToken);
+      onSaveSuccess(); // Appelle le parent pour rafraîchir et fermer
+    } catch (err) {
+      console.error("Erreur sauvegarde interaction:", err);
+      let errorMessage = "Une erreur est survenue.";
+      if (err.errors) {
+         errorMessage = `Erreur(s):\n${JSON.stringify(err.errors)}`;
+      } else if (err.message) {
+          errorMessage = err.message;
       }
-    })
-    .catch(error => console.error("Erreur API:", error));
+      setError(errorMessage);
+    } finally {
+      setLoadingSubmit(false);
+    }
   };
 
+  // Ne rien rendre si la modale n'est pas ouverte
   if (!isOpen) return null;
 
+  // Rendu de la modale
   return (
-    <div style={modalStyles.overlay} onClick={onClose}>
-      <div style={modalStyles.content} onClick={e => e.stopPropagation()}>
-        <button style={modalStyles.closeButton} onClick={onClose}>&times;</button>
-        <h2>Ajouter une Interaction</h2>
-        <form onSubmit={handleSubmit}>
+    <Dialog open={isOpen} onClose={onClose} maxWidth="sm" fullWidth disableEscapeKeyDown={loadingSubmit}>
+      <Box component="form" onSubmit={handleSubmit}>
+        <DialogTitle sx={{ pb: 1 }}>
+          Ajouter une Interaction
+          <IconButton aria-label="close" onClick={onClose} disabled={loadingSubmit}
+            sx={{ position: 'absolute', right: 8, top: 8, color: (theme) => theme.palette.grey[500] }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
 
-          <div>
-            <label>Contact concerné :</label>
-            <select
-              name="contact"
-              value={formData.contact}
-              onChange={handleChange}
-              required
-              style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
-            >
-              <option value="" disabled>-- Choisir un contact --</option>
-              {contactsSociete.map(contact => (
-                <option key={contact.id} value={contact.id}>
-                  {contact.prenom} {contact.nom}
-                </option>
-              ))}
-            </select>
-          </div>
+        <DialogContent>
+          {/* Affichage d'erreur globale */}
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-          <div>
-            <label>Type d'interaction :</label>
-            <select
-              name="type_interaction"
-              value={formData.type_interaction}
-              onChange={handleChange}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
-            >
-              <option value="APPEL">Appel téléphonique</option>
-              <option value="EMAIL">Email</option>
-              <option value="RDV">Rendez-vous</option>
-              <option value="AUTRE">Autre</option>
-            </select>
-          </div>
+          {/* Utiliser Grid pour les champs */}
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            {/* Sélecteur de Contact */}
+            <Grid item xs={12}>
+              <FormControl fullWidth required error={!formData.contact && error.includes("contact")} disabled={loadingSubmit || loadingContacts}>
+                <InputLabel id="contact-interaction-label">Contact concerné</InputLabel>
+                <Select
+                  labelId="contact-interaction-label"
+                  id="contact"
+                  name="contact"
+                  value={formData.contact}
+                  label="Contact concerné" // Important
+                  onChange={handleChange}
+                >
+                  {/* Option vide désactivée */}
+                  <MenuItem value="" disabled>
+                    <em>{loadingContacts ? 'Chargement...' : '-- Choisir --'}</em>
+                  </MenuItem>
+                  {contactsSociete.map(contact => (
+                    <MenuItem key={contact.id} value={contact.id}>
+                      {contact.prenom} {contact.nom} ({contact.fonction || 'N/A'})
+                    </MenuItem>
+                  ))}
+                </Select>
+                 {!loadingContacts && contactsSociete.length === 0 && !error && (
+                    <Typography variant="caption" sx={{mt: 1, fontStyle: 'italic', color: 'text.secondary'}}>
+                        Aucun contact trouvé pour cette société.
+                    </Typography>
+                 )}
+              </FormControl>
+            </Grid>
 
-          <div>
-            <label>Date et Heure :</label>
-            <input
-              type="datetime-local"
-              name="date_interaction"
-              value={formData.date_interaction}
-              onChange={handleChange}
-              required
-              style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
-            />
-          </div>
+            {/* Sélecteur Type Interaction */}
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth required disabled={loadingSubmit}>
+                <InputLabel id="type-interaction-label">Type</InputLabel>
+                <Select
+                  labelId="type-interaction-label"
+                  id="type_interaction"
+                  name="type_interaction"
+                  value={formData.type_interaction}
+                  label="Type"
+                  onChange={handleChange}
+                >
+                  <MenuItem value="APPEL">Appel téléphonique</MenuItem>
+                  <MenuItem value="EMAIL">Email</MenuItem>
+                  <MenuItem value="RDV">Rendez-vous</MenuItem>
+                  <MenuItem value="AUTRE">Autre</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
 
-          <div>
-            <label>Notes :</label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              required
-              rows="4"
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', fontFamily: 'inherit' }}
-            />
-          </div>
+            {/* Champ Date et Heure */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Date et Heure"
+                name="date_interaction"
+                type="datetime-local" // Utilise le picker natif
+                value={formData.date_interaction}
+                onChange={handleChange}
+                required
+                fullWidth
+                disabled={loadingSubmit}
+                InputLabelProps={{ shrink: true }} // Assure que le label ne chevauche pas la valeur
+              />
+            </Grid>
 
-          <div style={{ marginTop: '20px', textAlign: 'right' }}>
-            <button type="button" onClick={onClose} style={{ marginRight: '10px' }}>Annuler</button>
-            <button type="submit" style={{ backgroundColor: 'blue', color: 'white' }}>Enregistrer</button>
-          </div>
-        </form>
-      </div>
-    </div>
+            {/* Champ Notes */}
+            <Grid item xs={12}>
+              <TextField
+                label="Notes"
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                required
+                multiline // Zone de texte
+                rows={4}     // Hauteur
+                fullWidth
+                disabled={loadingSubmit}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={onClose} disabled={loadingSubmit} color="inherit">
+            Annuler
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={loadingSubmit || loadingContacts || contactsSociete.length === 0} // Désactiver si chargement ou pas de contact
+            startIcon={loadingSubmit ? <CircularProgress size={20} color="inherit" /> : null}
+          >
+            {loadingSubmit ? 'Enregistrement...' : 'Enregistrer'}
+          </Button>
+        </DialogActions>
+      </Box> {/* Fin du Box form */}
+    </Dialog>
   );
 }
 
