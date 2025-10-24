@@ -1,13 +1,19 @@
 # api/serializers.py
 from rest_framework import serializers
 # Assurez-vous d'importer les DEUX modèles
-from .models import Societe, Contact, Mandat, Groupe
+from .models import Societe, Contact, Mandat, Groupe, Interaction
 
 # Class pour filiales
 class FilialeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Societe
         fields = ['id', 'nom']  # On ne veut que l'ID et le nom
+
+# Class pour Groupe
+class GroupeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Groupe
+        fields = ['id', 'nom', 'description'] # On prend tous les champs
 
 # Class pour sociétés
 class SocieteSerializer(serializers.ModelSerializer):
@@ -40,9 +46,34 @@ class SocieteSerializer(serializers.ModelSerializer):
 
 # Class pour contacts
 class ContactSerializer(serializers.ModelSerializer):
+    # --- MODIFICATION ---
+
+    # Pour la LECTURE (GET): On affiche les objets Groupe complets (grâce au GroupeSerializer).
+    groupes = GroupeSerializer(many=True, read_only=True)
+
+    # Pour l'ÉCRITURE (POST/PUT): On accepte une liste d'IDs de groupes.
+    # 'source' pointe vers le champ 'groupes' du modèle.
+    groupes_ids = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Groupe.objects.all(),
+        source='groupes',
+        write_only=True,
+        required=False  # Un contact n'est pas obligé d'être dans un groupe
+    )
+
     class Meta:
         model = Contact
-        fields = '__all__'
+        # On liste tous les champs manuellement pour inclure nos nouveaux champs
+        fields = [
+            'id', 'denominatif', 'nom', 'prenom', 'fonction', 'date_de_naissance',
+            'email', 'telephone_fixe', 'telephone_portable', 'linkedin',
+            'societe', 'statut',
+            'date_creation', 'date_modification', 'date_dernier_mailing',
+            'date_dernier_appel', 'date_dernier_mail',
+
+            'groupes',  # Pour la lecture (GET)
+            'groupes_ids'  # Pour l'écriture (POST/PUT)
+        ]
 
 # Class pour Mandats
 class MandatSerializer(serializers.ModelSerializer):
@@ -60,8 +91,16 @@ class MandatSerializer(serializers.ModelSerializer):
             'acheteurs_potentiels', 'cedants_potentiels'
         ]
 
-# Class pour Groupe
-class GroupeSerializer(serializers.ModelSerializer):
+# Class pour Interactions
+class InteractionSerializer(serializers.ModelSerializer):
+    # Afficher le nom du contact plutôt que son ID
+    contact_nom = serializers.StringRelatedField(source='contact', read_only=True)
+    # Afficher le nom de l'utilisateur
+    utilisateur_nom = serializers.StringRelatedField(source='utilisateur', read_only=True)
+
     class Meta:
-        model = Groupe
-        fields = ['id', 'nom', 'description'] # On prend tous les champs
+        model = Interaction
+        # On inclut les champs virtuels
+        fields = '__all__'
+        # On rend certains champs read_only car ils sont définis automatiquement
+        read_only_fields = ['societe', 'utilisateur', 'date_creation', 'contact_nom', 'utilisateur_nom']

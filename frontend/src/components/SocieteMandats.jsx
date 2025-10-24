@@ -1,6 +1,7 @@
 // src/components/SocieteMandats.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { fetchGetData } from '../apiClient';
 
 // On va créer une petite fonction pour "traduire" les codes de l'API
 const getStatutLabel = (statut) => {
@@ -25,7 +26,7 @@ const getTypeLabel = (type) => {
 };
 
 
-function SocieteMandats({ societeId, listVersion, onAddMandatClick, onEditMandatClick, onDeleteMandatClick }) {
+function SocieteMandats({ societeId, listVersion, onAddMandatClick, onEditMandatClick, onDeleteMandatClick, authToken }) {
   const [mandats, setMandats] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,7 +43,7 @@ function SocieteMandats({ societeId, listVersion, onAddMandatClick, onEditMandat
         console.error("Erreur fetch mandats:", error);
         setLoading(false);
       });
-  }, [societeId]); // La fonction ne sera recréée que si societeId change
+  }, [societeId, authToken]); // La fonction ne sera recréée que si societeId change
 
   // On appelle la fonction au chargement
   useEffect(() => {

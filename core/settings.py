@@ -31,14 +31,27 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # 3rd Party Apps
     'rest_framework',
+    'rest_framework.authtoken',
+    'corsheaders',
+
+    # --- Allauth ---
+    'allauth',
+    'allauth.account',
+    # 'allauth.socialaccount', # (optionnel, pour connexion via Google etc.)
+
+    # --- dj-rest-auth (DOIT être après allauth) ---
+    'dj_rest_auth',             # <--- Déjà là
+
+    # --- Votre app ---
     'api',
 ]
 
@@ -51,6 +64,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -133,3 +147,19 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+# --- Configuration Allauth ---
+SITE_ID = 1
+ACCOUNT_EMAIL_VERIFICATION = 'none' # Pour simplifier (pas de vérif email pour l'instant)
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email' # Permet de se loguer avec user ou email
+ACCOUNT_EMAIL_REQUIRED = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
+
+REST_AUTH = {
+    'USER_DETAILS_SERIALIZER': 'dj_rest_auth.serializers.UserDetailsSerializer',
+}

@@ -1,8 +1,11 @@
 # core/urls.py
 from django.contrib import admin
-from django.urls import path, include # Assure-toi que 'include' est importé
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('api.urls')), # Ajoute cette ligne
+    path('api/', include('api.urls')),
+    path('auth/', include('dj_rest_auth.urls')),
+    # If you install allauth for registration later, you'll add its urls too:
+    # path('auth/registration/', include('dj_rest_auth.registration.urls')), # Example
 ]

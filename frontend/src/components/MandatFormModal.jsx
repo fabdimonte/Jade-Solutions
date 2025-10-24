@@ -1,5 +1,6 @@
 // src/components/MandatFormModal.jsx
 import React, { useState, useEffect } from 'react';
+import { fetchGetData } from '../apiClient';
 
 // (On peut copier-coller les styles de l'autre modale)
 const modalStyles = {
@@ -18,7 +19,7 @@ const modalStyles = {
   }
 };
 
-function MandatFormModal({ isOpen, onClose, societeId, onSaveSuccess, mandatToEdit }) {
+function MandatFormModal({ isOpen, onClose, societeId, onSaveSuccess, mandatToEdit, authToken }) {
 
   const [formData, setFormData] = useState({
     nom_mandat: '',
@@ -47,7 +48,7 @@ function MandatFormModal({ isOpen, onClose, societeId, onSaveSuccess, mandatToEd
         phase: '', valorisation_estimee: '', honoraires_estimes: '',
       });
     }
-  }, [mandatToEdit, isOpen]);
+  }, [mandatToEdit, isOpen, authToken]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -1,13 +1,16 @@
 // src/pages/SocieteDetailPage.jsx
 import React, { useState, useEffect } from 'react';
+import { fetchGetData } from '../apiClient';
 import { useParams, Link } from 'react-router-dom';
 import SocieteInfo from '../components/SocieteInfo';
 import SocieteContacts from '../components/SocieteContacts';
 import ContactFormModal from '../components/ContactFormModal';
 import SocieteMandats from '../components/SocieteMandats';
 import MandatFormModal from '../components/MandatFormModal';
+import SocieteInteractions from '../components/SocieteInteractions';
+import InteractionFormModal from '../components/InteractionFormModal';
 
-function SocieteDetailPage() {
+function SocieteDetailPage({ authToken }) {
   const { id } = useParams();
   const [formData, setFormData] = useState(null);
   const [activeTab, setActiveTab] = useState('info');
@@ -22,13 +25,17 @@ function SocieteDetailPage() {
   const [mandatListVersion, setMandatListVersion] = useState(0);
   const [mandatToEdit, setMandatToEdit] = useState(null); // Pour la modification plus tard
 
+  // --- États pour la modale Interaction ---
+  const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
+  const [interactionListVersion, setInteractionListVersion] = useState(0);
+
   // 2. Le useEffect va chercher les données de la société
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/societes/${id}/`)
       .then(response => response.json())
       .then(data => setFormData(data))
       .catch(error => console.error('Erreur fetch:', error));
-  }, [id]);
+  }, [id, authToken]);
 
   // 3. Le handleChange met à jour le formulaire
   const handleChange = (e) => {
@@ -135,6 +142,20 @@ function SocieteDetailPage() {
     }
   };
 
+  // FONCTIONS pour Interaction
+  const handleInteractionSaveSuccess = () => {
+    setInteractionListVersion(v => v + 1);
+    setIsInteractionModalOpen(false);
+  };
+
+  const handleAddInteractionClick = () => {
+    setIsInteractionModalOpen(true);
+  };
+
+  const handleCloseInteractionModal = () => {
+    setIsInteractionModalOpen(false);
+  }
+
   // 5. NOUVELLE FONCTION : pour gérer la suppression
 
 
@@ -174,6 +195,8 @@ function SocieteDetailPage() {
 
         {/* SÉLECTEUR D'ONGLETS */}
         <div style={{ borderBottom: '1px solid #ccc', marginBottom: '20px' }}>
+
+          {/* BOUTON SOCIETE */}
           <button
             type="button" // Empêche le bouton de soumettre le formulaire
             style={activeTab === 'info' ? activeTabStyles : tabStyles}
@@ -182,6 +205,7 @@ function SocieteDetailPage() {
             Informations Société
           </button>
 
+          {/* BOUTON CONTACTS */}
           <button
             type="button"
             style={activeTab === 'contacts' ? activeTabStyles : tabStyles}
@@ -190,12 +214,22 @@ function SocieteDetailPage() {
             Contacts
           </button>
 
+          {/* BOUTON MANDATS */}
           <button
             type="button"
             style={activeTab === 'mandats' ? activeTabStyles : tabStyles}
             onClick={() => setActiveTab('mandats')}
           >
             Mandats
+          </button>
+
+          {/* BOUTON D'ONGLET */}
+          <button
+            type="button"
+            style={activeTab === 'interactions' ? activeTabStyles : tabStyles}
+            onClick={() => setActiveTab('interactions')}
+          >
+            Interactions
           </button>
         </div>
 
@@ -225,8 +259,18 @@ function SocieteDetailPage() {
               onDeleteMandatClick={handleDeleteMandatClick}
             />
           )}
+
+        {/* NOUVEAU CONTENU D'ONGLET */}
+          {activeTab === 'interactions' && (
+            <SocieteInteractions
+              societeId={id}
+              listVersion={interactionListVersion}
+              onAddInteractionClick={handleAddInteractionClick}
+            />
+          )}
         </div>
       </form>
+
       {/* 7. On passe le NOUVEL état à la modale */}
       <ContactFormModal
         isOpen={isContactModalOpen}
@@ -242,6 +286,14 @@ function SocieteDetailPage() {
         societeId={id} // On passe l'ID de la société pour l'auto-associer
         onSaveSuccess={handleMandatSaveSuccess}
         mandatToEdit={mandatToEdit}
+      />
+
+      {/* MODALE Interaction */}
+      <InteractionFormModal
+        isOpen={isInteractionModalOpen}
+        onClose={handleCloseInteractionModal}
+        societeId={id}
+        onSaveSuccess={handleInteractionSaveSuccess}
       />
     </div>
   );

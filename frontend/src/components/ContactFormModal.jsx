@@ -1,5 +1,6 @@
 // src/components/ContactFormModal.jsx
 import React, { useState, useEffect } from 'react';
+import { fetchGetData } from '../apiClient';
 
 // ... (les styles de la modale restent inchangés) ...
 const modalStyles = {
@@ -19,12 +20,25 @@ const modalStyles = {
 };
 
 // 1. Accepter la nouvelle prop 'contactToEdit'
-function ContactFormModal({ isOpen, onClose, societeId, onSaveSuccess, contactToEdit }) {
+function ContactFormModal({ isOpen, onClose, societeId, onSaveSuccess, contactToEdit, authToken }) {
 
+  const [allGroupes, setAllGroupes] = useState([]);
   // 2. L'état initial du formulaire est vide
   const [formData, setFormData] = useState({
     prenom: '', nom: '', email: '', telephone_portable: '', fonction: '',
+    groupes_ids: [],
   });
+
+  // 3. useEffect pour charger les groupes disponibles
+  useEffect(() => {
+    // On charge les groupes uniquement si la modale est ouverte
+    if (isOpen) {
+      fetch('http://127.0.0.1:8000/api/groupes/')
+        .then(res => res.json())
+        .then(data => setAllGroupes(data))
+        .catch(err => console.error("Erreur chargement groupes:", err));
+    }
+  }, [isOpen, authToken]);
 
   // 3. NOUVEAU : Un 'useEffect' qui surveille 'contactToEdit'
   // Si on passe un contact à modifier, on remplit le formulaire avec ses données.
@@ -37,10 +51,12 @@ function ContactFormModal({ isOpen, onClose, societeId, onSaveSuccess, contactTo
         email: contactToEdit.email || '',
         telephone_portable: contactToEdit.telephone_portable || '',
         fonction: contactToEdit.fonction || '',
+        groupes_ids: contactToEdit.groupes ? contactToEdit.groupes.map(g => g.id) : [],
       });
     } else {
       setFormData({
         prenom: '', nom: '', email: '', telephone_portable: '', fonction: '',
+        groupes_ids: [],
       });
     }
   }, [contactToEdit, isOpen]); // Se redéclenche si le contact ou l'ouverture change
@@ -48,6 +64,20 @@ function ContactFormModal({ isOpen, onClose, societeId, onSaveSuccess, contactTo
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevData => ({ ...prevData, [name]: value }));
+  };
+
+  // 5. NOUVELLE fonction pour gérer les cases à cocher
+  const handleCheckboxChange = (groupeId) => {
+    setFormData(prevData => {
+      const currentGroupes = prevData.groupes_ids;
+      if (currentGroupes.includes(groupeId)) {
+        // Si déjà coché, on le retire
+        return { ...prevData, groupes_ids: currentGroupes.filter(id => id !== groupeId) };
+      } else {
+        // Sinon, on l'ajoute
+        return { ...prevData, groupes_ids: [...currentGroupes, groupeId] };
+      }
+    });
   };
 
   // 4. Le handleSubmit gère maintenant les deux cas (POST ou PUT)
@@ -58,7 +88,16 @@ function ContactFormModal({ isOpen, onClose, societeId, onSaveSuccess, contactTo
     const isEditing = contactToEdit && contactToEdit.id;
 
     // On prépare les données et l'URL
-    const dataToSend = { ...formData, societe: societeId };
+    const dataToSend = {
+      prenom: formData.prenom,
+      nom: formData.nom,
+      email: formData.email,
+      telephone_portable: formData.telephone_portable,
+      fonction: formData.fonction,
+      societe: societeId,
+      groupes_ids: formData.groupes_ids, // <-- Notre champ est là
+    };
+
     const url = isEditing
       ? `http://127.0.0.1:8000/api/contacts/${contactToEdit.id}/`
       : 'http://127.0.0.1:8000/api/contacts/';
@@ -118,10 +157,34 @@ function ContactFormModal({ isOpen, onClose, societeId, onSaveSuccess, contactTo
               <input type="text" name="fonction" value={formData.fonction} onChange={handleChange} style={{width: '100%'}} />
             </div>
           </div>
+
+          {/* 7. NOUVELLE section pour les groupes */}
+          <hr style={{ margin: '20px 0' }} />
+          <h4>Groupes</h4>
+          <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ddd', padding: '10px' }}>
+            {allGroupes.length > 0 ? (
+              allGroupes.map(groupe => (
+                <div key={groupe.id}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={formData.groupes_ids.includes(groupe.id)}
+                      onChange={() => handleCheckboxChange(groupe.id)}
+                    />
+                    {groupe.nom}
+                  </label>
+                </div>
+              ))
+            ) : (
+              <p>Aucun groupe trouvé. (Créez-en dans la page "Gestion des Groupes")</p>
+            )}
+          </div>
+
           <div style={{ marginTop: '20px', textAlign: 'right' }}>
             <button type="button" onClick={onClose} style={{ marginRight: '10px' }}>Annuler</button>
             <button type="submit" style={{ backgroundColor: 'blue', color: 'white' }}>Enregistrer</button>
           </div>
+
         </form>
       </div>
     </div>

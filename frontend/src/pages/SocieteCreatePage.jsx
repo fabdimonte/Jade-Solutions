@@ -1,8 +1,9 @@
 // src/pages/SocieteCreatePage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // <--- Hook pour la redirection
+import { fetchGetData } from '../apiClient';
 
-function SocieteCreatePage() {
+function SocieteCreatePage({ authToken }) {
   // 1. Un "état" pour chaque champ de notre formulaire
   const [nom, setNom] = useState('');
   const [siren, setSiren] = useState('');

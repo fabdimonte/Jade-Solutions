@@ -1,18 +1,18 @@
 # api/views.py
 from rest_framework import viewsets, status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from django.db.models import Q
-from .models import Societe, Contact, Mandat, Groupe
-from .serializers import SocieteSerializer, ContactSerializer, MandatSerializer, GroupeSerializer
+from .models import Societe, Contact, Mandat, Groupe, Interaction
+from .serializers import SocieteSerializer, ContactSerializer, MandatSerializer, GroupeSerializer, InteractionSerializer
 
 
 class SocieteViewSet(viewsets.ModelViewSet):
     queryset = Societe.objects.all()
     serializer_class = SocieteSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     filter_backends = [SearchFilter]
     search_fields = ['nom', 'siren']
 
@@ -20,7 +20,7 @@ class SocieteViewSet(viewsets.ModelViewSet):
 class ContactViewSet(viewsets.ModelViewSet):
     serializer_class = ContactSerializer
     queryset = Contact.objects.all()
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = Contact.objects.all()
@@ -33,7 +33,7 @@ class ContactViewSet(viewsets.ModelViewSet):
 class MandatViewSet(viewsets.ModelViewSet):
     serializer_class = MandatSerializer
     queryset = Mandat.objects.all()
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = Mandat.objects.all()
@@ -111,5 +111,29 @@ class MandatViewSet(viewsets.ModelViewSet):
 class GroupeViewSet(viewsets.ModelViewSet):
     queryset = Groupe.objects.all().order_by('nom')
     serializer_class = GroupeSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 # --- FIN DE GROUPEVIEWSET ---
+
+
+# --- DÉBUT DE InteractionViewSet (SIMPLE) ---
+class InteractionViewSet(viewsets.ModelViewSet):
+    serializer_class = InteractionSerializer
+    queryset = Interaction.objects.all()
+    permission_classes = [IsAuthenticated] # Pour l'instant
+
+    def get_queryset(self):
+        queryset = Interaction.objects.all()
+        societe_id = self.request.query_params.get('societe_id')
+        contact_id = self.request.query_params.get('contact_id')
+
+        if societe_id:
+            queryset = queryset.filter(societe_id=societe_id)
+        elif contact_id: # Note: un filtre exclut l'autre pour l'instant
+            queryset = queryset.filter(contact_id=contact_id)
+
+        return queryset
+
+    # Pour lier automatiquement l'utilisateur connecté (quand on aura l'auth)
+    # def perform_create(self, serializer):
+    #    serializer.save(utilisateur=self.request.user)
+# --- FIN DE InteractionViewSet ---

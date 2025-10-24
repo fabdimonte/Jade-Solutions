@@ -1,16 +1,24 @@
 // src/pages/SocieteListPage.jsx
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // <--- IMPORTER Link
+import { Link } from 'react-router-dom'; //
+import { fetchGetData } from '../apiClient';
 
-function SocieteListPage() {
+function SocieteListPage({ authToken }) {
   const [societes, setSocietes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/societes/')
-      .then(response => response.json())
-      .then(data => setSocietes(data))
-      .catch(error => console.error('Erreur:', error));
-  }, []);
+    setLoading(true);
+    fetchGetData('/societes/', authToken)
+      .then(data => {
+        setSocietes(data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Erreur:', error);
+        setLoading(false);
+      });
+  }, [authToken]);
 
   return (
     <div>

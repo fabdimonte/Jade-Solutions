@@ -1,9 +1,10 @@
 // src/components/SocieteContacts.jsx
 import React, { useState, useEffect, useCallback } from 'react';
+import { fetchGetData } from '../apiClient';
 // On n'importe plus ContactFormModal ici
 
 // 1. Accepter les nouvelles props : listVersion et onAddContactClick
-function SocieteContacts({ societeId, listVersion, onAddContactClick, onEditContactClick, onDeleteContactClick }) {
+function SocieteContacts({ societeId, listVersion, onAddContactClick, onEditContactClick, onDeleteContactClick, authToken }) {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,13 +27,23 @@ function SocieteContacts({ societeId, listVersion, onAddContactClick, onEditCont
   // 3. useEffect dépend maintenant de listVersion
   useEffect(() => {
     fetchContacts();
-  }, [fetchContacts, listVersion]); // Se relance si listVersion change
+  }, [fetchContacts, listVersion, authToken]); // Se relance si listVersion change
 
   // 4. La fonction handleSaveSuccess a disparu
 
   if (loading && contacts.length === 0) {
     return <div>Chargement des contacts...</div>;
   }
+
+  // Style pour les "badges" de groupe
+  const badgeStyle = {
+    backgroundColor: '#e0e0e0',
+    color: '#333',
+    padding: '2px 6px',
+    borderRadius: '8px',
+    fontSize: '0.8em',
+    marginRight: '5px',
+  };
 
   return (
     <div>
@@ -53,6 +64,17 @@ function SocieteContacts({ societeId, listVersion, onAddContactClick, onEditCont
                 <strong>{contact.prenom} {contact.nom}</strong> ({contact.fonction})
                 <br />
                 Email: {contact.email} | Tél: {contact.telephone_portable}
+                <br />
+
+                {/* --- AJOUT : Afficher les groupes --- */}
+                  <div style={{ marginTop: '5px' }}>
+                    {contact.groupes && contact.groupes.map(groupe => (
+                      <span key={groupe.id} style={badgeStyle}>
+                        {groupe.nom}
+                      </span>
+                    ))}
+                  </div>
+
               </div>
               <div>
                 {/* 2. NOUVEAU BOUTON : qui appelle la fonction du parent */}

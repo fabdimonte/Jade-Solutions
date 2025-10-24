@@ -1,6 +1,7 @@
 # api/models.py
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 
 
 # ==============================================================================
@@ -175,3 +176,43 @@ class Mandat(models.Model):
 
     def __str__(self):
         return self.nom_mandat
+
+    # ==============================================================================
+    # MODÈLE Gestion des interactions
+    # ==============================================================================
+    # Historique des échanges
+    # ==============================================================================
+
+class Interaction(models.Model):
+    class TypeInteraction(models.TextChoices):
+        APPEL = 'APPEL', 'Appel téléphonique'
+        EMAIL = 'EMAIL', 'Email'
+        RDV = 'RDV', 'Rendez-vous'
+        AUTRE = 'AUTRE', 'Autre'
+
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE, related_name='interactions')
+    # On peut aussi lier l'interaction à la société directement (optionnel mais pratique)
+    societe = models.ForeignKey(Societe, on_delete=models.CASCADE, related_name='interactions', null=True, blank=True)
+    # Lier à l'utilisateur qui a enregistré l'interaction
+    utilisateur = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+
+    type_interaction = models.CharField(max_length=10, choices=TypeInteraction.choices)
+    date_interaction = models.DateTimeField(default=timezone.now, verbose_name="Date et heure")
+    notes = models.TextField()
+
+    # On pourrait lier l'interaction à un mandat spécifique aussi
+    # mandat = models.ForeignKey(Mandat, on_delete=models.SET_NULL, null=True, blank=True)
+
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.get_type_interaction_display()} avec {self.contact} le {self.date_interaction.strftime('%d/%m/%Y')}"
+
+    # On s'assure que si le contact a une société, l'interaction est aussi liée
+    def save(self, *args, **kwargs):
+        if self.contact and self.contact.societe:
+            self.societe = self.contact.societe
+        super().save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-date_interaction'] # Afficher les plus récentes d'abord

@@ -1,10 +1,11 @@
 // src/pages/MandatDetailPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { fetchGetData } from '../apiClient';
 import MandatInfo from '../components/MandatInfo'; // <--- Importer
 import MandatContreparties from '../components/MandatContreparties'; // <--- Importer
 
-function MandatDetailPage() {
+function MandatDetailPage({ authToken }) {
   const [formData, setFormData] = useState(null);
   const [activeTab, setActiveTab] = useState('info'); // 'info' par défaut
   const { id } = useParams();
@@ -23,7 +24,7 @@ function MandatDetailPage() {
   // Appeler la fonction au chargement
   useEffect(() => {
     fetchMandatData();
-  }, [fetchMandatData]);
+  }, [fetchMandatData, authToken]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

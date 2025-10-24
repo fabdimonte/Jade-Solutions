@@ -1,5 +1,6 @@
 // src/components/MandatContreparties.jsx
 import React, { useState } from 'react';
+import { fetchGetData } from '../apiClient';
 
 // Ce composant gère soit les 'acheteurs' soit les 'cedants'
 // - titre: "Acheteurs Potentiels" ou "Cédants Potentiels"
@@ -7,7 +8,7 @@ import React, { useState } from 'react';
 // - mandatId: l'ID du mandat en cours
 // - typeAction: "acheteur" ou "cedant", pour appeler la bonne API
 // - onUpdate: la fonction pour dire au parent de se rafraîchir
-function MandatContreparties({ titre, listeSocietes, mandatId, typeAction, onUpdate }) {
+function MandatContreparties({ titre, listeSocietes, mandatId, typeAction, onUpdate, authToken }) {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);

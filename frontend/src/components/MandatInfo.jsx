@@ -1,8 +1,9 @@
 // src/components/MandatInfo.jsx
 import React from 'react';
+import { fetchGetData } from '../apiClient';
 
 // Ce composant "bête" ne fait qu'afficher le formulaire
-function MandatInfo({ formData, handleChange }) {
+function MandatInfo({ formData, handleChange, authToken }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
       <div>

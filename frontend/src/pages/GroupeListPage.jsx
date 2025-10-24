@@ -1,8 +1,9 @@
 // src/pages/GroupeListPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { fetchGetData } from '../apiClient';
 
-function GroupeListPage() {
+function GroupeListPage({ authToken }) {
   const [groupes, setGroupes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,7 +19,7 @@ function GroupeListPage() {
         setGroupes(data);
         setLoading(false);
       });
-  }, []);
+  }, [authToken]);
 
   // Charger les groupes au démarrage
   useEffect(() => {

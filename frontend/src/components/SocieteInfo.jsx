@@ -1,8 +1,9 @@
 // src/components/SocieteInfo.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { fetchGetData } from '../apiClient';
 
-function SocieteInfo({ formData, handleChange }) {
+function SocieteInfo({ formData, handleChange, authToken }) {
 
   // Style pour les inputs, pour éviter la répétition
   const inputStyle = {
